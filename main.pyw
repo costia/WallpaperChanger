@@ -50,17 +50,21 @@ class MainApp:
             }
 
             self.imageSources.append(instanceType(redditArgs))
-
-        self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config,self.setStatus)
-        self.wallpaperReplaceThread.start()
         
         sourceTypes=[x for x in self.sourceMapping]
         self.GUI = WallpaperChangerGUI(self,sourceTypes)
+
+        self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config,self.setStatus)
+        self.wallpaperReplaceThread.start()
+
         self.GUI.MainLoop()
         pass
 
-    def setStatus(self,text):
-        self.GUI.setStatus(text)
+    def setStatus(self,text,statusDict={}):
+        self.GUI.setStatus(text,statusDict)
+    
+    def changeWallpaper(self):
+        self.wallpaperReplaceThread.changeWallpaper()
 
     def handleExit(self):
         self.wallpaperReplaceThread.stop()

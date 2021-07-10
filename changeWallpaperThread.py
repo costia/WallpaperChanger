@@ -16,26 +16,31 @@ class ChangeWallpaperThread(threading.Thread):
     def stop(self):
         self.stopEvent.set()
 
+    def changeWallpaper(self):
+        self.setStatus('Changing wallpaper',{'blockChange':True})
+        image = None
+        retries = 0
+        while not image:
+            selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
+            self.log.info(f'ChangeWallpaperThread: selected source {selectedSource.getName()}')
+            retDict = selectedSource.getImage()
+            if retDict:
+                image = retDict['image']
+                metaName = retDict['metaName']
+                setWallpaper(image)
+                self.setStatus(f'{selectedSource.getName()}: {metaName}',{'blockChange':False})
+            else:
+                self.setStatus(f'{selectedSource.getName()}: FAILED, retrying')
+                retries +=1
+                if retries>self.config['failRetries']:
+                    break
+                time.sleep(self.config['failWait'])
+        if not image:
+            self.setStatus(f'{selectedSource.getName()}: FAILED, retries exhausted',{'blockChange':False})
+
     def run(self):
         while not self.stopEvent.is_set():
-            image = None
-            retries = 0
-            while not image:
-                selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
-                self.log.info(f'ChangeWallpaperThread: selected source {selectedSource.getName()}')
-                retDict = selectedSource.getImage()
-                if retDict:
-                    image = retDict['image']
-                    metaName = retDict['metaName']
-                    setWallpaper(image)
-                    self.setStatus(f'{selectedSource.getName()}: {metaName}')
-                else:
-                    self.setStatus(f'{selectedSource.getName()}: FAILED')
-                    retries +=1
-                    if retries>self.config['failRetries']:
-                        continue
-                    time.sleep(self.config['failWait'])
-            
+            self.changeWallpaper()
             minutesPassed=0
             while minutesPassed<self.config['changePeriod']:
                 time.sleep(60)

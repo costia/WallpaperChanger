@@ -23,6 +23,7 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
+        createMenuItem(menu, 'Change now',  lambda x: self.wxApp.changeWallpaper())
         createMenuItem(menu, 'Exit',  lambda x: self.wxApp.handleExit())
         return menu
 
@@ -60,6 +61,9 @@ class WallpaperFrame(wx.Frame):
         self.timeSelect.SetSelection(self._getCurrentTimeSelectID())
         self.timeSelect.Bind(wx.EVT_COMBOBOX, self.onTimeSelectChange)
         nextY += 30
+        self.changeNowButton = wx.Button(self,-1,'Change now',pos=(startX,nextY),size=(windowWidth,20))
+        self.changeNowButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.changeWallpaper())
+        nextY += 30
 
         nextY += 20
         self.labelSources = wx.StaticText(self,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
@@ -93,8 +97,14 @@ class WallpaperFrame(wx.Frame):
         self.sourceRemovButton.Disable()
         self.SetSize(size = (windowWidth+25,nextY+50))
         
-    def setStatus(self,text):
-        self.labelStatus.SetLabelText(text)
+    def setStatus(self,text,statusDict):
+        self.labelStatus.SetValue(text)
+        self.labelStatus.Update()
+        if 'blockChange' in statusDict:
+            if statusDict['blockChange']:
+                self.changeNowButton.Disable()
+            else:
+                self.changeNowButton.Enable()
     
     def onTimeSelectChange(self,event):
         selected = self.timeSelect.GetValue()
@@ -141,8 +151,11 @@ class WallpaperChangerGUI(wx.App):
         self.frame.Destroy()
         wx.CallAfter(self.Destroy)
     
-    def setStatus(self,text):
-        self.frame.setStatus(text)
+    def setStatus(self,text,statusDict):
+        self.frame.setStatus(text,statusDict)
+    
+    def changeWallpaper(self):
+        self.mainApp.changeWallpaper()
     
     def toggleShow(self):
         if self.frame.IsShown():
