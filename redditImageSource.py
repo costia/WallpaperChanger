@@ -30,7 +30,7 @@ class RedditImageSource:
         self.userAgent = str(random.randint(0,INT64_MAX))
     
     def getName(self):
-        return self.subreddit
+        return '/r/'+self.subreddit
 
     def getImage(self):
         headers={'Authorization':base64.b64decode(self.headerData).decode(),'User-Agent':self.userAgent}
@@ -87,4 +87,8 @@ class RedditImageSource:
         f.close()
 
         self.log.info(f'RedditImageSource: {self.subreddit} fetched {permalink}')
-        return outFile
+        retData = {
+            'image':outFile,
+            'metaName':postData['title']
+        }
+        return retData

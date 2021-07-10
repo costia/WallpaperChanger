@@ -3,7 +3,7 @@ import os
 import shutil
 
 Resources={
-    'TRAY_TOOLTIP' :'Wallpaper changer',
+    'APP_NAME' :'Wallpaper changer',
     'ICON_PATH' :'resources/icon.png',
     'CONFIG_YAML':'config.yaml',
     'LOG_FILE':'log.txt',

@@ -1,8 +1,11 @@
 sources:
-- {type: subreddit, config: wallpaper}
-- {type: subreddit, config: wallpapers}
-- {type: folder, config: 'C:\Users\Costia\Pictures\Saved Wallpapers'}
-changePeriod: 30
+- type: subreddit
+  config: wallpaper
+- type: subreddit
+  config: wallpapers
+- type: folder
+  config: C:\Users\Costia\Pictures\Saved Wallpapers
+changePeriod: 5
 failRetries: 10
 failWait: 1
 aspecRatioMargin: 0.3

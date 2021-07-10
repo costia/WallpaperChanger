@@ -18,7 +18,7 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
         self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
         
         icon = wx.Icon(wx.Bitmap(Resources['ICON_PATH']))
-        self.SetIcon(icon, Resources['TRAY_TOOLTIP'])
+        self.SetIcon(icon, Resources['APP_NAME'])
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, lambda x: self.wxApp.toggleShow())
 
     def CreatePopupMenu(self):
@@ -30,9 +30,12 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
 class WallpaperFrame(wx.Frame):
     def __init__(self,wxApp,config):
         windowWidth = 300
-        startX = 30
+        startX = 5
 
         super(WallpaperFrame, self).__init__(None, style= wx.CAPTION |	 wx.CLOSE_BOX | wx.MINIMIZE_BOX)
+        self.SetTitle(Resources['APP_NAME'])
+        self.SetIcon(wx.Icon(wx.Bitmap(Resources['ICON_PATH'])))
+
         self.config = config
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
@@ -49,7 +52,7 @@ class WallpaperFrame(wx.Frame):
         
         nextY = 10
         
-        self.label = wx.StaticText(self,label = "Wallpaper refresh delay:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
+        self.labelRefresh = wx.StaticText(self,label = "Wallpaper refresh delay:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
         nextY += 20
 
         self.timeSelect = wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x for x in self.timeSelections])
@@ -58,7 +61,7 @@ class WallpaperFrame(wx.Frame):
         nextY += 30
 
         nextY += 20
-        self.label = wx.StaticText(self,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
+        self.labelSources = wx.StaticText(self,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
         nextY += 20
         self.sourceTypes=['subreddit','folder']
         self.sourceTypeSelect= wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=self.sourceTypes)
@@ -81,8 +84,15 @@ class WallpaperFrame(wx.Frame):
         self.minimizeButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.toggleShow())
         nextY += 50
 
-        self.SetSize(size = (windowWidth+70,nextY+50))
+        self.labelStatus = wx.TextCtrl(self,pos=(startX,nextY),size=(windowWidth,40),style = wx.TE_READONLY| wx.TE_MULTILINE| wx.TE_NO_VSCROLL ) 
+        self.labelStatus.SetLabelText('Status')
+        self.labelStatus.SetBackgroundColour((173,173,173))
+        nextY += 30
+
+        self.SetSize(size = (windowWidth+25,nextY+50))
         
+    def setStatus(self,text):
+        self.labelStatus.SetLabelText(text)
     
     def onTimeSelectChange(self,event):
         selected = self.timeSelect.GetValue()
@@ -127,6 +137,9 @@ class WallpaperChangerGUI(wx.App):
         self.taskbar.Destroy()
         self.frame.Destroy()
         wx.CallAfter(self.Destroy)
+    
+    def setStatus(self,text):
+        self.frame.setStatus(text)
     
     def toggleShow(self):
         if self.frame.IsShown():
