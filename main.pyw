@@ -85,6 +85,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # ret = ctypes.windll.user32.SystemParametersInfoW(20, 0, 'C:\\Users\\Costia\\Documents\\cofeePy\\1.bmp' , 0)
-
     main()

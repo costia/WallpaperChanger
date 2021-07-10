@@ -32,8 +32,8 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
 
 
 class WallpaperFrame(wx.Frame):
-    def __init__(self,app,*args, **kwargs):
-        super(WallpaperFrame, self).__init__(*args, **kwargs)
+    def __init__(self,app):
+        super(WallpaperFrame, self).__init__(None, style= wx.CAPTION |	 wx.CLOSE_BOX | wx.MINIMIZE_BOX)
         self.app = app
         self.popupmenu = wx.Menu()
         createMenuItem(self.popupmenu, 'Minimize',  lambda x: self.app.toggleShow())
@@ -41,6 +41,7 @@ class WallpaperFrame(wx.Frame):
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnShowPopup)
         
         self.Bind(wx.EVT_CLOSE, lambda x: self.app.handleExit())
+        self.Bind(wx.EVT_ICONIZE, lambda x: self.app.toggleShow())
         
     
     def OnShowPopup(self,event):
@@ -51,7 +52,7 @@ class WallpaperChangerGUI(wx.App):
         super(WallpaperChangerGUI, self).__init__()
         self.mainApp = mainApp
         self.taskbar = TaskBarIcon(self)
-        self.frame = WallpaperFrame(self,None, style= wx.CAPTION |	 wx.CLOSE_BOX)
+        self.frame = WallpaperFrame(self)
         self.frame.Show(True)
     
     def handleExit(self):
@@ -64,6 +65,11 @@ class WallpaperChangerGUI(wx.App):
         wx.CallAfter(self.Destroy)
     
     def toggleShow(self):
-        self.frame.Show(not self.frame.IsShown())
+        if self.frame.IsShown():
+            self.frame.Show(False)
+        else:
+            self.frame.Show(True)
+            if self.frame.IsIconized():
+                self.frame.Iconize(False)
 
 
