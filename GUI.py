@@ -71,7 +71,7 @@ class WallpaperFrame(wx.Frame):
         self.sourceTypeSelect= wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=self.sourceTypes)
         self.sourceTypeSelect.SetSelection(0)
         nextY += 25
-        self.sourceConfig = wx.TextCtrl(self,pos=(startX,nextY),size=(windowWidth,20))
+        self.sourceConfig = wx.TextCtrl(self,pos=(startX,nextY),size=(windowWidth,20),style = wx.TE_PROCESS_ENTER)
         nextY += 20
         self.sourceAddButton = wx.Button(self,-1,'Add new source',pos=(startX,nextY),size=(windowWidth,20))
         nextY += 30
@@ -93,10 +93,50 @@ class WallpaperFrame(wx.Frame):
         self.labelStatus.SetBackgroundColour((173,173,173))
         nextY += 30
 
-        self.sourceAddButton.Disable()
-        self.sourceRemovButton.Disable()
+        self.sourceAddButton.Bind(wx.EVT_BUTTON, self.addSource)
+        self.sourceConfig.Bind(wx.EVT_TEXT_ENTER,self.addSource)
+        self.sourceRemovButton.Bind(wx.EVT_BUTTON,self.removeSource)
         self.SetSize(size = (windowWidth+25,nextY+50))
+    
+    def removeSource(self,event):
+        selectedSource = self.sourcesListbox.GetStringSelection()
+        splitLocation = selectedSource.find(':')
+        sourceType = selectedSource[0:splitLocation]
+        sourceConfig = selectedSource[splitLocation+1:]
+        newList=[]
+        itemRemoved=False
+        for src in self.config['sources']:
+            if src['type']==sourceType and src['config']==sourceConfig:
+                itemRemoved = True
+            else:
+                newList.append(src)
         
+        if itemRemoved:
+            self.config['sources']=newList
+            sourcesListStrings = [ x['type']+':'+x['config'] for x in self.config['sources']]
+            self.sourcesListbox.SetItems(sourcesListStrings)
+            self.sourcesListbox.SetSelection(0)
+
+            self.configChanged()
+            self.resetSources()
+
+
+    def addSource(self,event):
+        sourceType = self.sourceTypeSelect.GetStringSelection()
+        sourceConfig = self.sourceConfig.GetValue()
+        if sourceConfig:
+            sourceDict={
+                'type':sourceType,
+                'config':sourceConfig
+            }
+            self.config['sources'].append(sourceDict)
+            sourcesListStrings = [ x['type']+':'+x['config'] for x in self.config['sources']]
+            self.sourcesListbox.SetItems(sourcesListStrings)
+            self.sourcesListbox.Select(0)
+            
+            self.configChanged()
+            self.resetSources()
+
     def setStatus(self,text,statusDict):
         self.labelStatus.SetValue(text)
         self.labelStatus.Update()
@@ -110,8 +150,15 @@ class WallpaperFrame(wx.Frame):
         selected = self.timeSelect.GetValue()
         selectedPeriod = self.timeSelections[selected]
         self.config['changePeriod'] = selectedPeriod
+        self.configChanged()
         self.log.info(f'GUI_WallpaperFrame: wallpaper refresh time changed to {selectedPeriod}')
         
+    def resetSources(self):
+        self.wxApp.resetSources()
+
+    def configChanged(self):
+        self.wxApp.configChanged()
+
     def OnShowPopup(self,event):
         self.PopupMenu(self.popupmenu,self.ScreenToClient(event.GetPosition()))
 
@@ -151,11 +198,17 @@ class WallpaperChangerGUI(wx.App):
         self.frame.Destroy()
         wx.CallAfter(self.Destroy)
     
+    def configChanged(self):
+        self.mainApp.configChanged()
+
     def setStatus(self,text,statusDict):
         self.frame.setStatus(text,statusDict)
     
     def changeWallpaper(self):
         self.mainApp.changeWallpaper()
+    
+    def resetSources(self):
+        self.mainApp.resetSources()
     
     def toggleShow(self):
         if self.frame.IsShown():

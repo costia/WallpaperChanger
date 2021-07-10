@@ -1,9 +1,9 @@
 sources:
 - type: subreddit
-  config: wallpaper
-- type: subreddit
   config: wallpapers
-changePeriod: 5
+- type: subreddit
+  config: wallpaper
+changePeriod: 10
 failRetries: 10
 failWait: 1
 aspecRatioMargin: 0.3

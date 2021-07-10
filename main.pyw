@@ -34,8 +34,23 @@ class MainApp:
             'folder':FolderImageSource
         }
 
-        self.imageSources  =[]
+        
+        
+        sourceTypes=[x for x in self.sourceMapping]
+        self.GUI = WallpaperChangerGUI(self,sourceTypes)
 
+        self.wallpaperReplaceThread = ChangeWallpaperThread(self.config,self.setStatus)
+        self.resetSources()
+        
+        self.wallpaperReplaceThread.start()
+        self.GUI.MainLoop()
+        pass
+
+    def setStatus(self,text,statusDict={}):
+        self.GUI.setStatus(text,statusDict)
+    
+    def resetSources(self):
+        newSources = []
         for source in self.config['sources']:
             sourceType = source['type']
             if not sourceType in self.sourceMapping:
@@ -49,32 +64,26 @@ class MainApp:
                 'aspecRatioMargin':self.config['aspecRatioMargin']
             }
 
-            self.imageSources.append(instanceType(redditArgs))
+            newSources.append(instanceType(redditArgs))
+        self.imageSources = newSources
+        self.wallpaperReplaceThread.resetSources(self.imageSources)
         
-        sourceTypes=[x for x in self.sourceMapping]
-        self.GUI = WallpaperChangerGUI(self,sourceTypes)
+    def configChanged(self):
+        self.saveConfig()
 
-        self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config,self.setStatus)
-        self.wallpaperReplaceThread.start()
-
-        self.GUI.MainLoop()
-        pass
-
-    def setStatus(self,text,statusDict={}):
-        self.GUI.setStatus(text,statusDict)
-    
     def changeWallpaper(self):
         self.wallpaperReplaceThread.changeWallpaper()
 
-    def handleExit(self):
-        self.wallpaperReplaceThread.stop()
-
+    def saveConfig(self):
         configPath=Resources['CONFIG_YAML']
         shutil.copyfile(configPath,configPath+'.bak')
         with open(configPath,'wt') as f:
             yaml.dump(self.config,f,Dumper=yaml.SafeDumper,sort_keys=False)
         self.log.info(f'MainApp: saved config {configPath}')
-        
+
+    def handleExit(self):
+        self.wallpaperReplaceThread.stop()
+        self.saveConfig()
         self.GUI.exitGUI()
 
 def main():

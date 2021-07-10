@@ -5,9 +5,8 @@ import logging
 from osChangeWallpaper import setWallpaper
 
 class ChangeWallpaperThread(threading.Thread):
-    def __init__(self,imageSources,config,setStatus):
+    def __init__(self,config,setStatus):
         super(ChangeWallpaperThread, self).__init__()
-        self.imageSources = imageSources
         self.config = config
         self.setStatus = setStatus
         self.stopEvent = threading.Event()
@@ -15,6 +14,9 @@ class ChangeWallpaperThread(threading.Thread):
     
     def stop(self):
         self.stopEvent.set()
+
+    def resetSources(self,imageSources):
+        self.imageSources = imageSources
 
     def changeWallpaper(self):
         self.setStatus('Changing wallpaper',{'blockChange':True})
