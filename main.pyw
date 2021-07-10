@@ -4,6 +4,7 @@ import time
 import random
 import yaml
 import shutil
+from win32api import GetSystemMetrics
 
 from GUI import WallpaperChangerGUI
 from osChangeWallpaper import setWallpaper
@@ -51,6 +52,9 @@ class MainApp:
         self.log.addHandler(fileHandler)
         self.log.info(f'MainApp: started')
 
+        self.width = GetSystemMetrics(0)
+        self.height = GetSystemMetrics(1)
+
         for param in Resources:
             self.log.info(f'MainApp: {param}:{Resources[param]}')
 
@@ -60,17 +64,12 @@ class MainApp:
         self.imageSources  =[]
         for subreddit in self.config['subreddits']:
             redditArgs = {
-                'width':self.config['width'],
-                'height':self.config['height'],
-                'subreddit':subreddit
+                'width':self.width,
+                'height':self.height,
+                'subreddit':subreddit,
+                'aspecRatioMargin':self.config['aspecRatioMargin']
             }
             self.imageSources.append(RedditImageSource(redditArgs))
-        redditArgs = {
-            'width':1920,
-            'height':1080,
-            'subreddit':'wallpapers'
-        }
-        self.imageSources.append(RedditImageSource(redditArgs))
 
         self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config)
         self.wallpaperReplaceThread.start()

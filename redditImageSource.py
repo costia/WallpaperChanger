@@ -16,6 +16,7 @@ class RedditImageSource:
         self.subreddit = argsDict['subreddit']
         self.width = argsDict['width']
         self.height = argsDict['height']
+        self.ARmargin = argsDict['aspecRatioMargin']
         self.minMP = self.width*self.height/2
         self.requiredAR = self.width/self.height
 
@@ -69,11 +70,12 @@ class RedditImageSource:
         imageData = postData['preview']['images'][0]['source']
         currentAR = imageData['width']/imageData['height']
         currentMP = imageData['width']*imageData['height']
-        if abs(currentAR-self.requiredAR)/self.requiredAR>0.1:
-            self.log.error(f'RedditImageSource: {self.subreddit} incompatible aspect ratio {permalink}')
+        aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
+        if aspectRatioDiff>self.ARmargin:
+            self.log.error(f'RedditImageSource: {self.subreddit} incompatible aspect ratio AR={currentAR} {permalink}')
             return None
         if currentMP<self.minMP:
-            self.log.error(f'RedditImageSource: {self.subreddit} small image {permalink}')
+            self.log.error(f'RedditImageSource: {self.subreddit} small image {currentMP}MP {permalink}')
             return None
         
         response = requests.get(postData['url'])
