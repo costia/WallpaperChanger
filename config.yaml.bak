@@ -1,9 +1,0 @@
-subreddits:
-  - wallpaper
-  - wallpapers
-changePeriod: 1800
-width: 1920
-height: 1080
-
-failRetries: 10
-failWait: 1

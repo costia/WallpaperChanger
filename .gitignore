@@ -3,3 +3,5 @@ temp
 log.txt
 build
 dist
+__pycache__
+*.bak
