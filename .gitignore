@@ -1,0 +1,5 @@
+*.pyc
+temp
+log.txt
+build
+dist
