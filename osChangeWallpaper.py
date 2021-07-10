@@ -3,15 +3,16 @@ import os
 import logging
 import ctypes
 
+from resources import Resources
+
 def setWallpaper(path):
     log = logging.getLogger('WallpaperChanger')
     if not os.path.isfile(path):
         log.error(f'setWallpaper: file not found {path}')
         return False
 
-    tempDir = os.path.abspath('./temp')
-    if not os.path.isdir(tempDir):
-        os.mkdir(tempDir)
+    tempDir = Resources['TEMP_DIR']
+
     try:
         im = Image.open(path)
     except:

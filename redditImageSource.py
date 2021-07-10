@@ -5,8 +5,10 @@ import json
 import random
 import os
 from urllib.parse import urlparse
-
 from wx.core import INT64_MAX
+
+from resources import Resources
+
 
 class RedditImageSource:
     def __init__(self,argsDict):
@@ -17,9 +19,7 @@ class RedditImageSource:
         self.minMP = self.width*self.height/2
         self.requiredAR = self.width/self.height
 
-        self.tempDir = os.path.abspath('./temp')
-        if not os.path.isdir(self.tempDir):
-            os.mkdir(self.tempDir)
+        self.tempDir = Resources['TEMP_DIR']
 
         self.tokenEndpoint = 'https://www.reddit.com/api/v1/access_token'
         self.APIendpoint = f'https://oauth.reddit.com/r/{self.subreddit}/'

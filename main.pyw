@@ -1,12 +1,14 @@
-
-from GUI import WallpaperChangerGUI
-from osChangeWallpaper import setWallpaper
-from redditImageSource import RedditImageSource
 import logging
 import threading
 import time 
 import random
 import yaml
+
+from GUI import WallpaperChangerGUI
+from osChangeWallpaper import setWallpaper
+from redditImageSource import RedditImageSource
+from resources import Resources
+
 
 class ChangeWallpaperThread(threading.Thread):
     def __init__(self,imageSources,config):
@@ -41,14 +43,17 @@ class MainApp:
     def __init__(self):
         log = logging.getLogger('WallpaperChanger')
         log.setLevel(logging.INFO)
-        fileHandler = logging.FileHandler('log.txt',encoding='utf-8')
+        fileHandler = logging.FileHandler(Resources['LOG_FILE'],encoding='utf-8')
         fileHandler.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s, %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
         fileHandler.setFormatter(formatter)
         log.addHandler(fileHandler)
         log.info(f'MainApp: started')
 
-        with open('config.yaml','rt') as f:
+        for param in Resources:
+            log.info(f'MainApp: {param}:{Resources[param]}')
+
+        with open(Resources['CONFIG_YAML'],'rt') as f:
             self.config = yaml.load(f)
         
         self.imageSources  =[]

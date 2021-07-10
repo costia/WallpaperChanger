@@ -1,9 +1,8 @@
 import wx
 import wx.adv
-import sys
+from resources import Resources
 
-TRAY_TOOLTIP = 'Wallpaper changer'
-ICON_PATH = 'resources/icon.png'
+
 
 def createMenuItem(menu, label, func):
     item = wx.MenuItem(menu, -1, label)
@@ -17,12 +16,9 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
         super(TaskBarIcon, self).__init__()
         self.app = app
         self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
-        if hasattr(sys,'_MEIPASS'):
-            iconPath = sys._MEIPASS+'/'+ICON_PATH
-        else:
-            iconPath = ICON_PATH
-        icon = wx.Icon(wx.Bitmap(iconPath))
-        self.SetIcon(icon, TRAY_TOOLTIP)
+        
+        icon = wx.Icon(wx.Bitmap(Resources['ICON_PATH']))
+        self.SetIcon(icon, Resources['TRAY_TOOLTIP'])
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, lambda x: self.app.toggleShow())
 
     def CreatePopupMenu(self):
