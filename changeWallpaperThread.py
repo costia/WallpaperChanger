@@ -20,6 +20,7 @@ class ChangeWallpaperThread(threading.Thread):
 
     def changeWallpaper(self):
         self.setStatus('Changing wallpaper',{'blockChange':True})
+        self.minutesPassed=0
         image = None
         retries = 0
         while not image:
@@ -39,13 +40,13 @@ class ChangeWallpaperThread(threading.Thread):
                 time.sleep(self.config['failWait'])
         if not image:
             self.setStatus(f'{selectedSource.getName()}: FAILED, retries exhausted',{'blockChange':False})
+        self.minutesPassed=0
 
     def run(self):
         while not self.stopEvent.is_set():
             self.changeWallpaper()
-            minutesPassed=0
-            while minutesPassed<self.config['changePeriod']:
+            while self.minutesPassed<self.config['changePeriod']:
                 time.sleep(60)
-                minutesPassed +=1
-                self.setStatus(f'Time since last refresh: {minutesPassed} minutes')
+                self.minutesPassed +=1
+                # self.setStatus(f'Time since last refresh: {self.minutesPassed} minutes')
                 assert(self.config['changePeriod']>=1)

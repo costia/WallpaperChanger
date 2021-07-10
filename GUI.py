@@ -17,10 +17,13 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
         self.wxApp = wxApp
         self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
         
-        icon = wx.Icon(wx.Bitmap(Resources['ICON_PATH']))
-        self.SetIcon(icon, Resources['APP_NAME'])
+        self.icon = wx.Icon(wx.Bitmap(Resources['ICON_PATH']))
+        self.SetIcon(self.icon, Resources['APP_NAME'])
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, lambda x: self.wxApp.toggleShow())
-
+    
+    def setStatus(self,text,statusDict):
+        self.SetIcon(self.icon, text)
+    
     def CreatePopupMenu(self):
         menu = wx.Menu()
         createMenuItem(menu, 'Change now',  lambda x: self.wxApp.changeWallpaper())
@@ -76,9 +79,8 @@ class WallpaperFrame(wx.Frame):
         self.sourceAddButton = wx.Button(self,-1,'Add new source',pos=(startX,nextY),size=(windowWidth,20))
         nextY += 30
 
-        sourcesListStrings = [ x['type']+':'+x['config'] for x in self.config['sources']]
-        self.sourcesListbox = wx.ListBox(self,pos=(startX,nextY),size=(windowWidth,100),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=sourcesListStrings)
-        self.sourcesListbox.SetSelection(0)
+        self.sourcesListbox = wx.ListBox(self,pos=(startX,nextY),size=(windowWidth,100),style=wx.CB_DROPDOWN|wx.CB_READONLY)
+        self.updateSourcesList()
         nextY += 100
         self.sourceRemovButton = wx.Button(self,-1,'Remove source',pos=(startX,nextY),size=(windowWidth,20))
         nextY += 30
@@ -98,6 +100,11 @@ class WallpaperFrame(wx.Frame):
         self.sourceRemovButton.Bind(wx.EVT_BUTTON,self.removeSource)
         self.SetSize(size = (windowWidth+25,nextY+50))
     
+    def updateSourcesList(self):
+        sourcesListStrings = [ x['type']+':'+str(x['config']) for x in self.config['sources']]
+        self.sourcesListbox.SetItems(sourcesListStrings)
+        self.sourcesListbox.SetSelection(0)
+
     def removeSource(self,event):
         selectedSource = self.sourcesListbox.GetStringSelection()
         splitLocation = selectedSource.find(':')
@@ -106,16 +113,14 @@ class WallpaperFrame(wx.Frame):
         newList=[]
         itemRemoved=False
         for src in self.config['sources']:
-            if src['type']==sourceType and src['config']==sourceConfig:
+            if src['type']==sourceType and str(src['config'])==sourceConfig:
                 itemRemoved = True
             else:
                 newList.append(src)
         
         if itemRemoved:
             self.config['sources']=newList
-            sourcesListStrings = [ x['type']+':'+x['config'] for x in self.config['sources']]
-            self.sourcesListbox.SetItems(sourcesListStrings)
-            self.sourcesListbox.SetSelection(0)
+            self.updateSourcesList()
 
             self.configChanged()
             self.resetSources()
@@ -130,9 +135,7 @@ class WallpaperFrame(wx.Frame):
                 'config':sourceConfig
             }
             self.config['sources'].append(sourceDict)
-            sourcesListStrings = [ x['type']+':'+x['config'] for x in self.config['sources']]
-            self.sourcesListbox.SetItems(sourcesListStrings)
-            self.sourcesListbox.Select(0)
+            self.updateSourcesList()
             
             self.configChanged()
             self.resetSources()
@@ -203,6 +206,7 @@ class WallpaperChangerGUI(wx.App):
 
     def setStatus(self,text,statusDict):
         self.frame.setStatus(text,statusDict)
+        self.taskbar.setStatus(text,statusDict)
     
     def changeWallpaper(self):
         self.mainApp.changeWallpaper()
