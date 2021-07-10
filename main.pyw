@@ -6,11 +6,13 @@ import logging
 import threading
 import time 
 import random
+import yaml
 
 class ChangeWallpaperThread(threading.Thread):
-    def __init__(self,app):
+    def __init__(self,imageSources,config):
         super(ChangeWallpaperThread, self).__init__()
-        self.app = app
+        self.imageSources = imageSources
+        self.config = config
         self.stopEvent = threading.Event()
         self.log = logging.getLogger('WallpaperChanger')
     
@@ -20,14 +22,20 @@ class ChangeWallpaperThread(threading.Thread):
     def run(self):
         while not self.stopEvent.is_set():
             image = None
+            retries = 0
             while not image:
-                selectedSource = self.app.imageSources[random.randint(0,len(self.app.imageSources)-1)]
+                selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
                 self.log.info(f'ChangeWallpaperThread: selected source {selectedSource.getName()}')
                 image = selectedSource.getImage()
-                time.sleep(1)
                 if image:
                     setWallpaper(image)
-            time.sleep(60*30)
+                else:
+                    retries +=1
+                    if retries>self.config['failRetries']:
+                        continue
+                    time.sleep(self.config['failWait'])
+
+            time.sleep(self.config['changePeriod'])
 
 class MainApp:
     def __init__(self):
@@ -40,14 +48,17 @@ class MainApp:
         log.addHandler(fileHandler)
         log.info(f'MainApp: started')
 
+        with open('config.yaml','rt') as f:
+            self.config = yaml.load(f)
         
         self.imageSources  =[]
-        redditArgs = {
-            'width':1920,
-            'height':1080,
-            'subreddit':'wallpaper'
-        }
-        self.imageSources.append(RedditImageSource(redditArgs))
+        for subreddit in self.config['subreddits']:
+            redditArgs = {
+                'width':self.config['width'],
+                'height':self.config['height'],
+                'subreddit':subreddit
+            }
+            self.imageSources.append(RedditImageSource(redditArgs))
         redditArgs = {
             'width':1920,
             'height':1080,
@@ -55,7 +66,7 @@ class MainApp:
         }
         self.imageSources.append(RedditImageSource(redditArgs))
 
-        self.wallpaperReplaceThread = ChangeWallpaperThread(self)
+        self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config)
         self.wallpaperReplaceThread.start()
         
         self.GUI = WallpaperChangerGUI(self)

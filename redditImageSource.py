@@ -46,6 +46,7 @@ class RedditImageSource:
         response = requests.get(self.APIendpointRandom,headers=headers, params=params)
         parsedUrl = urlparse(response.url)
         if not parsedUrl.path.startswith(f'/r/{self.subreddit}/comments/'):
+            # https://stackoverflow.com/questions/60216514/unable-to-get-a-random-post-from-some-subreddits-with-praw
             self.log.warning(f'RedditImageSource: {self.subreddit} does not support random fetch')
             sortTypes = ['relevance','hot','top','new','comments']
             sortType = sortTypes[random.randint(0,len(sortTypes)-1)]
