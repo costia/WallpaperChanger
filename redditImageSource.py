@@ -38,7 +38,7 @@ class RedditImageSource:
         response = requests.post(self.tokenEndpoint,headers=headers,params=params)
         response = json.loads(response.content)
         if 'access_token' not in response:
-            self.log.error(f'RedditImageSource: {self.subreddit} failed to get access token')
+            self.log.error(f'RedditImageSource: {self.getName()} failed to get access token')
             return None
         accessToken=response['access_token']
 
@@ -48,7 +48,7 @@ class RedditImageSource:
         parsedUrl = urlparse(response.url)
         if not parsedUrl.path.startswith(f'/r/{self.subreddit}/comments/'):
             # https://stackoverflow.com/questions/60216514/unable-to-get-a-random-post-from-some-subreddits-with-praw
-            self.log.warning(f'RedditImageSource: {self.subreddit} does not support random fetch')
+            self.log.warning(f'RedditImageSource: {self.getName()} does not support random fetch')
             sortTypes = ['relevance','hot','top','new','comments']
             sortType = sortTypes[random.randint(0,len(sortTypes)-1)]
             timeLimits = ['hour','day','week','month','year','all']
@@ -64,7 +64,7 @@ class RedditImageSource:
             postData = response[0]['data']['children'][0]['data']
         permalink = 'www.reddit.com'+postData['permalink']
         if not 'post_hint' in postData or postData['post_hint']!='image':
-            self.log.error(f'RedditImageSource: {self.subreddit} unsupported post type {permalink}')
+            self.log.error(f'RedditImageSource: {self.getName()} unsupported post type {permalink}')
             return None
         
         imageData = postData['preview']['images'][0]['source']
@@ -72,10 +72,10 @@ class RedditImageSource:
         currentMP = imageData['width']*imageData['height']
         aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
         if aspectRatioDiff>self.ARmargin:
-            self.log.error(f'RedditImageSource: {self.subreddit} incompatible aspect ratio AR={currentAR} {permalink}')
+            self.log.error(f'RedditImageSource: {self.getName()} incompatible aspect ratio AR={currentAR} {permalink}')
             return None
         if currentMP<self.minMP:
-            self.log.error(f'RedditImageSource: {self.subreddit} small image {currentMP}MP {permalink}')
+            self.log.error(f'RedditImageSource: {self.getName()} small image {currentMP}MP {permalink}')
             return None
         
         response = requests.get(postData['url'])
@@ -86,7 +86,7 @@ class RedditImageSource:
             f.write(data)
         f.close()
 
-        self.log.info(f'RedditImageSource: {self.subreddit} fetched {permalink}')
+        self.log.info(f'RedditImageSource: {self.getName()} fetched {permalink}')
         retData = {
             'image':outFile,
             'metaName':postData['title']

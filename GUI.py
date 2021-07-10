@@ -89,6 +89,8 @@ class WallpaperFrame(wx.Frame):
         self.labelStatus.SetBackgroundColour((173,173,173))
         nextY += 30
 
+        self.sourceAddButton.Disable()
+        self.sourceRemovButton.Disable()
         self.SetSize(size = (windowWidth+25,nextY+50))
         
     def setStatus(self,text):
