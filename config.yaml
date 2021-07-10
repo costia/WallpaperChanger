@@ -1,7 +1,7 @@
 subreddits:
 - wallpaper
 - wallpapers
-changePeriod: 1800
+changePeriod: 30
 failRetries: 10
 failWait: 1
 aspecRatioMargin: 0.3

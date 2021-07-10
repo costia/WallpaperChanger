@@ -30,5 +30,9 @@ class ChangeWallpaperThread(threading.Thread):
                     if retries>self.config['failRetries']:
                         continue
                     time.sleep(self.config['failWait'])
-
-            time.sleep(self.config['changePeriod'])
+            
+            minutesPassed=0
+            while minutesPassed<self.config['changePeriod']:
+                time.sleep(60)
+                minutesPassed +=1
+                assert(self.config['changePeriod']>=1)
