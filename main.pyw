@@ -54,7 +54,8 @@ class MainApp:
         self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config,self.setStatus)
         self.wallpaperReplaceThread.start()
         
-        self.GUI = WallpaperChangerGUI(self)
+        sourceTypes=[x for x in self.sourceMapping]
+        self.GUI = WallpaperChangerGUI(self,sourceTypes)
         self.GUI.MainLoop()
         pass
 

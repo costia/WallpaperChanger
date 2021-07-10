@@ -28,14 +28,15 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
 
 
 class WallpaperFrame(wx.Frame):
-    def __init__(self,wxApp,config):
+    def __init__(self,wxApp,config,sourceTypes):
         windowWidth = 300
         startX = 5
 
         super(WallpaperFrame, self).__init__(None, style= wx.CAPTION |	 wx.CLOSE_BOX | wx.MINIMIZE_BOX)
         self.SetTitle(Resources['APP_NAME'])
         self.SetIcon(wx.Icon(wx.Bitmap(Resources['ICON_PATH'])))
-
+        
+        self.sourceTypes = sourceTypes
         self.config = config
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
@@ -63,7 +64,6 @@ class WallpaperFrame(wx.Frame):
         nextY += 20
         self.labelSources = wx.StaticText(self,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
         nextY += 20
-        self.sourceTypes=['subreddit','folder']
         self.sourceTypeSelect= wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=self.sourceTypes)
         self.sourceTypeSelect.SetSelection(0)
         nextY += 25
@@ -124,11 +124,12 @@ class WallpaperFrame(wx.Frame):
         return selectedItem
 
 class WallpaperChangerGUI(wx.App):
-    def __init__(self,mainApp):
+    def __init__(self,mainApp,sourceTypes):
         super(WallpaperChangerGUI, self).__init__()
         self.mainApp = mainApp
+        self.sourceTypes = sourceTypes
         self.taskbar = TaskBarIcon(self)
-        self.frame = WallpaperFrame(self,mainApp.config)
+        self.frame = WallpaperFrame(self,mainApp.config,sourceTypes)
         self.frame.Show(True)
     
     def handleExit(self):
