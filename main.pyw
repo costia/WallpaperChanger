@@ -6,6 +6,7 @@ from win32api import GetSystemMetrics
 from resources import Resources
 from GUI import WallpaperChangerGUI
 from redditImageSource import RedditImageSource
+from folderImageSource import FolderImageSource
 from changeWallpaperThread import ChangeWallpaperThread
 
 class MainApp:
@@ -28,15 +29,27 @@ class MainApp:
         with open(Resources['CONFIG_YAML'],'rt') as f:
             self.config = yaml.load(f,Loader=yaml.SafeLoader)
         
+        self.sourceMapping ={
+            'subreddit':RedditImageSource,
+            'folder':FolderImageSource
+        }
+
         self.imageSources  =[]
-        for subreddit in self.config['subreddits']:
+
+        for source in self.config['sources']:
+            sourceType = source['type']
+            if not sourceType in self.sourceMapping:
+                self.log.error(f'MainApp: unknow source type {sourceType}')
+                continue
+            instanceType = self.sourceMapping[sourceType]
             redditArgs = {
                 'width':self.width,
                 'height':self.height,
-                'subreddit':subreddit,
+                'config':source['config'],
                 'aspecRatioMargin':self.config['aspecRatioMargin']
             }
-            self.imageSources.append(RedditImageSource(redditArgs))
+
+            self.imageSources.append(instanceType(redditArgs))
 
         self.wallpaperReplaceThread = ChangeWallpaperThread(self.imageSources,self.config)
         self.wallpaperReplaceThread.start()

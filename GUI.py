@@ -29,7 +29,10 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
 
 class WallpaperFrame(wx.Frame):
     def __init__(self,wxApp,config):
-        super(WallpaperFrame, self).__init__(None, style= wx.CAPTION |	 wx.CLOSE_BOX | wx.MINIMIZE_BOX, size = (200,200))
+        windowWidth = 300
+        startX = 30
+
+        super(WallpaperFrame, self).__init__(None, style= wx.CAPTION |	 wx.CLOSE_BOX | wx.MINIMIZE_BOX)
         self.config = config
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
@@ -44,15 +47,41 @@ class WallpaperFrame(wx.Frame):
 
         self.timeSelections = {'5min':5,'10min':10,'30min':30,'1h':60,'4h':60*4,'12h':60*12,'24h':60*24}
         
-
-        self.label = wx.StaticText(self,label = "Wallpaper refresh delay:" ,pos=(30,10),style = wx.ALIGN_LEFT) 
+        nextY = 10
         
-        self.timeSelect = wx.ComboBox(self,pos=(30,30),size=(100,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x for x in self.timeSelections])
+        self.label = wx.StaticText(self,label = "Wallpaper refresh delay:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
+        nextY += 20
+
+        self.timeSelect = wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x for x in self.timeSelections])
         self.timeSelect.SetSelection(self._getCurrentTimeSelectID())
         self.timeSelect.Bind(wx.EVT_COMBOBOX, self.onTimeSelectChange)
+        nextY += 30
 
-        self.minimizeButton = wx.Button(self,-1,'Minimize to tray',pos=(30,90),size=(100,30))
+        nextY += 20
+        self.label = wx.StaticText(self,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
+        nextY += 20
+        self.sourceTypes=['subreddit','folder']
+        self.sourceTypeSelect= wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=self.sourceTypes)
+        self.sourceTypeSelect.SetSelection(0)
+        nextY += 25
+        self.sourceConfig = wx.TextCtrl(self,pos=(startX,nextY),size=(windowWidth,20))
+        nextY += 20
+        self.sourceAddButton = wx.Button(self,-1,'Add new source',pos=(startX,nextY),size=(windowWidth,20))
+        nextY += 30
+
+        sourcesListStrings = [ x['type']+':'+x['config'] for x in self.config['sources']]
+        self.sourcesListbox = wx.ListBox(self,pos=(startX,nextY),size=(windowWidth,100),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=sourcesListStrings)
+        self.sourcesListbox.SetSelection(0)
+        nextY += 100
+        self.sourceRemovButton = wx.Button(self,-1,'Remove source',pos=(startX,nextY),size=(windowWidth,20))
+        nextY += 30
+
+        nextY += 20
+        self.minimizeButton = wx.Button(self,-1,'Minimize to tray',pos=(startX,nextY),size=(windowWidth,30))
         self.minimizeButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.toggleShow())
+        nextY += 50
+
+        self.SetSize(size = (windowWidth+70,nextY+50))
         
     
     def onTimeSelectChange(self,event):

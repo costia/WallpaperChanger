@@ -13,7 +13,7 @@ from resources import Resources
 class RedditImageSource:
     def __init__(self,argsDict):
         self.log = logging.getLogger('WallpaperChanger')
-        self.subreddit = argsDict['subreddit']
+        self.subreddit = argsDict['config']
         self.width = argsDict['width']
         self.height = argsDict['height']
         self.ARmargin = argsDict['aspecRatioMargin']

@@ -1,6 +1,7 @@
-subreddits:
-- wallpaper
-- wallpapers
+sources:
+- {type: subreddit, config: wallpaper}
+- {type: subreddit, config: wallpapers}
+- {type: folder, config: 'C:\Users\Costia\Pictures\Saved Wallpapers'}
 changePeriod: 30
 failRetries: 10
 failWait: 1
