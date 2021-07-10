@@ -3,6 +3,7 @@ import threading
 import time 
 import random
 import yaml
+import shutil
 
 from GUI import WallpaperChangerGUI
 from osChangeWallpaper import setWallpaper
@@ -41,20 +42,20 @@ class ChangeWallpaperThread(threading.Thread):
 
 class MainApp:
     def __init__(self):
-        log = logging.getLogger('WallpaperChanger')
-        log.setLevel(logging.INFO)
+        self.log = logging.getLogger('WallpaperChanger')
+        self.log.setLevel(logging.INFO)
         fileHandler = logging.FileHandler(Resources['LOG_FILE'],encoding='utf-8')
         fileHandler.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s, %(levelname)s: %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
         fileHandler.setFormatter(formatter)
-        log.addHandler(fileHandler)
-        log.info(f'MainApp: started')
+        self.log.addHandler(fileHandler)
+        self.log.info(f'MainApp: started')
 
         for param in Resources:
-            log.info(f'MainApp: {param}:{Resources[param]}')
+            self.log.info(f'MainApp: {param}:{Resources[param]}')
 
         with open(Resources['CONFIG_YAML'],'rt') as f:
-            self.config = yaml.load(f)
+            self.config = yaml.load(f,Loader=yaml.SafeLoader)
         
         self.imageSources  =[]
         for subreddit in self.config['subreddits']:
@@ -81,6 +82,13 @@ class MainApp:
     
     def handleExit(self):
         self.wallpaperReplaceThread.stop()
+
+        configPath=Resources['CONFIG_YAML']
+        shutil.copyfile(configPath,configPath+'.bak')
+        with open(configPath,'wt') as f:
+            yaml.dump(self.config,f,Dumper=yaml.SafeDumper,sort_keys=False)
+        self.log.info(f'MainApp: saved config {configPath}')
+        
         self.GUI.exitGUI()
 
 def main():
