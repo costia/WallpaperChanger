@@ -40,5 +40,5 @@ class ChangeWallpaperThread(threading.Thread):
             while minutesPassed<self.config['changePeriod']:
                 time.sleep(60)
                 minutesPassed +=1
-                self.setStatus('Time since last refresh: {minutesPassed}minutes')
+                self.setStatus(f'Time since last refresh: {minutesPassed}minutes')
                 assert(self.config['changePeriod']>=1)
