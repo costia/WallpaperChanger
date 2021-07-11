@@ -8,7 +8,7 @@
             "name": "main",
             "type": "python",
             "request": "launch",
-            "program": "main.pyw",
+            "program": "${workspaceFolder}/src/main.pyw",
             "console": "integratedTerminal"
         }
     ]

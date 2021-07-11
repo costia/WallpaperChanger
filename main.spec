@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['main.pyw'],
+a = Analysis(['src/main.pyw'],
              pathex=['C:\\Users\\Costia\\Documents\\WallpaperChanger'],
              binaries=[],
              datas=[('resources\\*', 'resources\\'),('config.yaml', '.')],
