@@ -2,8 +2,6 @@ import os
 import logging
 import random
 
-from wx.core import StaticBitmap
-
 class FolderImageSource:
     def __init__(self,argsDict):
         self.path = argsDict['config']

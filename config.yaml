@@ -7,6 +7,8 @@ sources:
   config: wallpapers
 - type: subreddit
   config: wallpaper
+- type: earthview
+  config: earthview
 changePeriod: 10
 failRetries: 10
 failWait: 1
