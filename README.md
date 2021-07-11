@@ -1,6 +1,6 @@
 Auto wallpaper changer, taking random images from multiple sources.
 
-![Wallpaper changer](https://i.imgur.com/gpCPQUL.png, "Wallpaper changer")
+![Wallpaper changer](https://i.imgur.com/ZUDQvnt.png, "Wallpaper changer")
 
 <br/>
 
