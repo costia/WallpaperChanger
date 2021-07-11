@@ -3,9 +3,10 @@ import wx.adv
 import logging
 from resources import Resources
 from GUI.common import createMenuItem
+from ImageSources import getSourceTypes
 
 class WallpaperFrame(wx.Frame):
-    def __init__(self,wxApp,config,sourceTypes):
+    def __init__(self,wxApp,config):
         windowWidth = 300
         startX = 5
 
@@ -13,7 +14,7 @@ class WallpaperFrame(wx.Frame):
         self.SetTitle(Resources['APP_NAME'])
         self.SetIcon(wx.Icon(wx.Bitmap(Resources['ICON_PATH'])))
         
-        self.sourceTypes = sourceTypes
+        self.sourceTypes = getSourceTypes()
         self.config = config
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
@@ -21,7 +22,7 @@ class WallpaperFrame(wx.Frame):
         self.popupmenu = wx.Menu()
         createMenuItem(self.popupmenu, 'Minimize',  lambda x: self.wxApp.toggleShow())
         createMenuItem(self.popupmenu, 'Exit',  lambda x: self.wxApp.handleExit())
-        self.Bind(wx.EVT_CONTEXT_MENU, self.OnShowPopup)
+        self.Bind(wx.EVT_CONTEXT_MENU, self._onShowPopup)
         
         self.Bind(wx.EVT_CLOSE, lambda x: self.wxApp.handleExit())
         self.Bind(wx.EVT_ICONIZE, lambda x: self.wxApp.toggleShow())
@@ -35,7 +36,7 @@ class WallpaperFrame(wx.Frame):
 
         self.timeSelect = wx.ComboBox(self,pos=(startX,nextY),size=(windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x for x in self.timeSelections])
         self.timeSelect.SetSelection(self._getCurrentTimeSelectID())
-        self.timeSelect.Bind(wx.EVT_COMBOBOX, self.onTimeSelectChange)
+        self.timeSelect.Bind(wx.EVT_COMBOBOX, self._onTimeSelectChange)
         nextY += 30
         self.changeNowButton = wx.Button(self,-1,'Change now',pos=(startX,nextY),size=(windowWidth,20))
         self.changeNowButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.changeWallpaper())
@@ -53,7 +54,7 @@ class WallpaperFrame(wx.Frame):
         nextY += 30
 
         self.sourcesListbox = wx.ListBox(self,pos=(startX,nextY),size=(windowWidth,100),style=wx.CB_DROPDOWN|wx.CB_READONLY)
-        self.updateSourcesList()
+        self._updateSourcesList()
         nextY += 100
         self.sourceRemovButton = wx.Button(self,-1,'Remove source',pos=(startX,nextY),size=(windowWidth,20))
         nextY += 30
@@ -68,17 +69,17 @@ class WallpaperFrame(wx.Frame):
         self.labelStatus.SetBackgroundColour((173,173,173))
         nextY += 30
 
-        self.sourceAddButton.Bind(wx.EVT_BUTTON, self.addSource)
-        self.sourceConfig.Bind(wx.EVT_TEXT_ENTER,self.addSource)
-        self.sourceRemovButton.Bind(wx.EVT_BUTTON,self.removeSource)
+        self.sourceAddButton.Bind(wx.EVT_BUTTON, self._addSource)
+        self.sourceConfig.Bind(wx.EVT_TEXT_ENTER,self._addSource)
+        self.sourceRemovButton.Bind(wx.EVT_BUTTON,self._removeSource)
         self.SetSize(size = (windowWidth+25,nextY+50))
     
-    def updateSourcesList(self):
+    def _updateSourcesList(self):
         sourcesListStrings = [ x['type']+':'+str(x['config']) for x in self.config['sources']]
         self.sourcesListbox.SetItems(sourcesListStrings)
         self.sourcesListbox.SetSelection(0)
 
-    def removeSource(self,event):
+    def _removeSource(self,event):
         selectedSource = self.sourcesListbox.GetStringSelection()
         splitLocation = selectedSource.find(':')
         sourceType = selectedSource[0:splitLocation]
@@ -93,13 +94,13 @@ class WallpaperFrame(wx.Frame):
         
         if itemRemoved:
             self.config['sources']=newList
-            self.updateSourcesList()
+            self._updateSourcesList()
 
             self.configChanged()
             self.resetSources()
 
 
-    def addSource(self,event):
+    def _addSource(self,event):
         sourceType = self.sourceTypeSelect.GetStringSelection()
         sourceConfig = self.sourceConfig.GetValue()
         if sourceConfig:
@@ -108,34 +109,19 @@ class WallpaperFrame(wx.Frame):
                 'config':sourceConfig
             }
             self.config['sources'].append(sourceDict)
-            self.updateSourcesList()
+            self._updateSourcesList()
             
             self.configChanged()
             self.resetSources()
-
-    def setStatus(self,text,statusDict):
-        self.labelStatus.SetValue(text)
-        self.labelStatus.Update()
-        if 'blockChange' in statusDict:
-            if statusDict['blockChange']:
-                self.changeNowButton.Disable()
-            else:
-                self.changeNowButton.Enable()
     
-    def onTimeSelectChange(self,event):
+    def _onTimeSelectChange(self,event):
         selected = self.timeSelect.GetValue()
         selectedPeriod = self.timeSelections[selected]
         self.config['changePeriod'] = selectedPeriod
         self.configChanged()
         self.log.info(f'GUI_WallpaperFrame: wallpaper refresh time changed to {selectedPeriod}')
-        
-    def resetSources(self):
-        self.wxApp.resetSources()
 
-    def configChanged(self):
-        self.wxApp.configChanged()
-
-    def OnShowPopup(self,event):
+    def _onShowPopup(self,event):
         self.PopupMenu(self.popupmenu,self.ScreenToClient(event.GetPosition()))
 
     def _getCurrentTimeSelectID(self):
@@ -155,3 +141,27 @@ class WallpaperFrame(wx.Frame):
                 break
             selectedItem +=1
         return selectedItem
+    
+    
+    #
+    # called by App
+    #
+
+    def setStatus(self,text,statusDict):
+        self.labelStatus.SetValue(text)
+        self.labelStatus.Update()
+        if 'blockChange' in statusDict:
+            if statusDict['blockChange']:
+                self.changeNowButton.Disable()
+            else:
+                self.changeNowButton.Enable()
+
+    #
+    # App callbacks
+    #
+
+    def resetSources(self):
+        self.wxApp.resetSources()
+
+    def configChanged(self):
+        self.wxApp.configChanged()

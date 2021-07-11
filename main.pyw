@@ -2,11 +2,11 @@ import logging
 import yaml
 import shutil
 from win32api import GetSystemMetrics
+import copy
 
 from resources import Resources
 from GUI.wallpaperChangerGUI import WallpaperChangerGUI
-from ImageSources.redditImageSource import RedditImageSource
-from ImageSources.folderImageSource import FolderImageSource
+from ImageSources import ImageSource, registerAllTypes
 from changeWallpaperThread import ChangeWallpaperThread
 
 class MainApp:
@@ -20,6 +20,8 @@ class MainApp:
         self.log.addHandler(fileHandler)
         self.log.info(f'MainApp: started')
 
+        registerAllTypes()
+
         self.width = GetSystemMetrics(0)
         self.height = GetSystemMetrics(1)
 
@@ -32,15 +34,7 @@ class MainApp:
         configPath=Resources['CONFIG_YAML']
         shutil.copyfile(configPath,configPath+'.bak')
         
-        self.sourceMapping ={
-            'subreddit':RedditImageSource,
-            'folder':FolderImageSource
-        }
-
-        
-        
-        sourceTypes=[x for x in self.sourceMapping]
-        self.GUI = WallpaperChangerGUI(self,sourceTypes)
+        self.GUI = WallpaperChangerGUI(self)
 
         self.wallpaperReplaceThread = ChangeWallpaperThread(self.config,self.setStatus)
         self.resetSources()
@@ -55,19 +49,17 @@ class MainApp:
     def resetSources(self):
         newSources = []
         for source in self.config['sources']:
-            sourceType = source['type']
-            if not sourceType in self.sourceMapping:
-                self.log.error(f'MainApp: unknow source type {sourceType}')
-                continue
-            instanceType = self.sourceMapping[sourceType]
             redditArgs = {
+                'type':source['type'],
+                'config':source['config'],
                 'width':self.width,
                 'height':self.height,
-                'config':source['config'],
-                'aspecRatioMargin':self.config['aspecRatioMargin']
+                'aspectRatioMargin':self.config['aspectRatioMargin']
             }
-
-            newSources.append(instanceType(redditArgs))
+            redditArgs = copy.deepcopy(redditArgs)
+            sourceInstance = ImageSource(redditArgs)
+            if sourceInstance:
+                newSources.append(sourceInstance)
         self.imageSources = newSources
         self.wallpaperReplaceThread.resetSources(self.imageSources)
         

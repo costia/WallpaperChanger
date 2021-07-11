@@ -6,4 +6,4 @@ sources:
 changePeriod: 10
 failRetries: 10
 failWait: 1
-aspecRatioMargin: 0.3
+aspectRatioMargin: 0.3

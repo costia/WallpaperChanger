@@ -9,14 +9,13 @@ from wx.core import INT64_MAX
 
 from resources import Resources
 
-
 class RedditImageSource:
     def __init__(self,argsDict):
         self.log = logging.getLogger('WallpaperChanger')
         self.subreddit = argsDict['config']
         self.width = argsDict['width']
         self.height = argsDict['height']
-        self.ARmargin = argsDict['aspecRatioMargin']
+        self.ARmargin = argsDict['aspectRatioMargin']
         self.minMP = self.width*self.height/2
         self.requiredAR = self.width/self.height
 
@@ -31,6 +30,10 @@ class RedditImageSource:
     
     def getName(self):
         return '/r/'+self.subreddit
+    
+    @staticmethod
+    def getTypeName():
+        return 'subreddit'
 
     def getImage(self):
         headers={'Authorization':base64.b64decode(self.headerData).decode(),'User-Agent':self.userAgent}

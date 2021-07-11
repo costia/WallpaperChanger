@@ -2,6 +2,8 @@ import os
 import logging
 import random
 
+from wx.core import StaticBitmap
+
 class FolderImageSource:
     def __init__(self,argsDict):
         self.path = argsDict['config']
@@ -10,6 +12,10 @@ class FolderImageSource:
 
     def getName(self):
         return self.path
+    
+    @staticmethod
+    def getTypeName():
+        return 'folder'
 
     def getImage(self):
         if not os.path.isdir(self.path):
@@ -34,3 +40,5 @@ class FolderImageSource:
             'metaName':os.path.basename(selectedFile)
         }
         return retData
+
+
