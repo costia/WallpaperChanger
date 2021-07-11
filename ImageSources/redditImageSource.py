@@ -92,6 +92,7 @@ class RedditImageSource:
         self.log.info(f'RedditImageSource: {self.getName()} fetched {permalink}')
         retData = {
             'image':outFile,
-            'metaName':postData['title']
+            'metaName':postData['title'],
+            'imageSource':permalink
         }
         return retData

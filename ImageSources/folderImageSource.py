@@ -37,7 +37,8 @@ class FolderImageSource:
         self.log.info(f'FolderImageSource: selected file is {selectedFile}')
         retData = {
             'image':selectedFile,
-            'metaName':os.path.basename(selectedFile)
+            'metaName':os.path.basename(selectedFile),
+            'imageSource':selectedFile
         }
         return retData
 
