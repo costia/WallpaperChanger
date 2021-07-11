@@ -61,7 +61,8 @@ class MainApp:
             if sourceInstance:
                 newSources.append(sourceInstance)
         self.imageSources = newSources
-        self.wallpaperReplaceThread.resetSources(self.imageSources)
+        self.wallpaperReplaceThread.setSources(self.imageSources)
+        self.GUI.setStatus({'imageSources':self.imageSources})
         
     def configChanged(self):
         self.saveConfig()

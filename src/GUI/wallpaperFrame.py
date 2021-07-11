@@ -1,10 +1,13 @@
 import wx
 import wx.adv
 import logging
+import copy
+
 from resources import Resources
 from GUI.common import createMenuItem
 from ImageSources import getSourceTypes
 from database import WallpaperDatabase
+
 
 class WallpaperFrame(wx.Frame):
     def __init__(self,wxApp,config):
@@ -124,7 +127,6 @@ class WallpaperFrame(wx.Frame):
         nextY += 30
 
         self.sourcesListbox = wx.ListBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,100))
-        self._updateSourcesList()
         nextY += 100
         self.sourceRemovButton = wx.Button(self.mainPanel,-1,'Remove source',pos=(startX,nextY),size=(self.windowWidth,20))
         nextY += 30
@@ -140,29 +142,18 @@ class WallpaperFrame(wx.Frame):
 
     
     def _updateSourcesList(self):
-        sourcesListStrings = [ x['type']+':'+str(x['config']) for x in self.config['sources']]
+        sourcesListStrings = [ x.getTypeName()+':'+x.getName() for x in self.imageSources]
         self.sourcesListbox.SetItems(sourcesListStrings)
         self.sourcesListbox.SetSelection(0)
 
     def _removeSource(self,event):
-        selectedSource = self.sourcesListbox.GetStringSelection()
-        splitLocation = selectedSource.find(':')
-        sourceType = selectedSource[0:splitLocation]
-        sourceConfig = selectedSource[splitLocation+1:]
-        newList=[]
-        itemRemoved=False
-        for src in self.config['sources']:
-            if src['type']==sourceType and str(src['config'])==sourceConfig:
-                itemRemoved = True
-            else:
-                newList.append(src)
-        
-        if itemRemoved:
-            self.config['sources']=newList
-            self._updateSourcesList()
+        selectedSourceID = self.sourcesListbox.GetSelection()
+        newList = copy.deepcopy(self.config['sources'])
+        del newList[selectedSourceID]
 
-            self.configChanged()
-            self.resetSources()
+        self.config['sources']=newList
+        self.configChanged()
+        self.resetSources()
 
 
     def _addSource(self,event):
@@ -223,6 +214,9 @@ class WallpaperFrame(wx.Frame):
                 self.changeNowButton.Enable()
         if 'updateHistory' in statusDict and statusDict['updateHistory']:      
             self._updateHistoryList()
+        if 'imageSources' in statusDict:
+            self.imageSources = statusDict['imageSources']
+            self._updateSourcesList()
 
 
     #

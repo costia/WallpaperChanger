@@ -18,7 +18,7 @@ class ChangeWallpaperThread(threading.Thread):
     def stop(self):
         self.stopEvent.set()
 
-    def resetSources(self,imageSources):
+    def setSources(self,imageSources):
         self.imageSources = imageSources
 
     def changeWallpaper(self):
