@@ -40,21 +40,21 @@ class ChangeWallpaperThread(threading.Thread):
                 metaName = retDict['metaName']
                 dup = self.db.checkDuplicate(image)
                 if dup:
-                    self.setStatus({'status':f'Duplicate - {selectedSource.getName()}:{metaName}'})
+                    self.setStatus({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
                     self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
                     image = None
             else:
-                self.setStatus({'status':f'{selectedSource.getName()}: FAILED, retrying'})
+                self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying'})
             
             retries +=1
             if retries>self.config['failRetries']:
-                self.setStatus({'status':f'{selectedSource.getName()}: FAILED, retries exhausted','blockChange':False})
+                self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockChange':False})
                 break
             time.sleep(self.config['failWait'])
         
         if image:
             setWallpaper(image)
-            self.setStatus({'status':f'{selectedSource.getName()}: {metaName}', 'blockChange':False})
+            self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}', 'blockChange':False})
             dbEntry={
                 'sourceType':selectedSource.getTypeName(),
                 'sourceName':selectedSource.getName(),
