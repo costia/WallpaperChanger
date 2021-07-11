@@ -1,4 +1,8 @@
 sources:
+- type: imgur
+  config: wallpapers
+- type: imgur
+  config: wallpaper
 - type: subreddit
   config: wallpapers
 - type: subreddit

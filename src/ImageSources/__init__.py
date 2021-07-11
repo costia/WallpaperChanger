@@ -40,7 +40,9 @@ def registerAllTypes():
     #         if inspect.isclass(classType) and classType.__module__.startswith('ImageSources') and hasattr(classType,'getTypeName'):
     #             ret = registerSourceType(classType.getTypeName(),classType)  
     from ImageSources.redditImageSource import RedditImageSource
-    from ImageSources.folderImageSource import FolderImageSource                  
+    from ImageSources.folderImageSource import FolderImageSource
+    from ImageSources.imgurImageSource import ImgurImageSource
 
     registerSourceType(RedditImageSource.getTypeName(),RedditImageSource)
     registerSourceType(FolderImageSource.getTypeName(),FolderImageSource) 
+    registerSourceType(ImgurImageSource.getTypeName(),ImgurImageSource) 
