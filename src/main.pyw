@@ -43,8 +43,8 @@ class MainApp:
         self.GUI.MainLoop()
         pass
 
-    def setStatus(self,text,statusDict={}):
-        self.GUI.setStatus(text,statusDict)
+    def setStatus(self,statusDict={}):
+        self.GUI.setStatus(statusDict)
     
     def resetSources(self):
         newSources = []
@@ -77,7 +77,7 @@ class MainApp:
 
     def handleExit(self):
         self.log.info(f'MainApp: closing')
-        self.setStatus('Closing...')
+        self.setStatus({'status':'Closing...'})
         self.wallpaperReplaceThread.stop()
         self.saveConfig()
         self.GUI.exitGUI()

@@ -78,7 +78,7 @@ class WallpaperFrame(wx.Frame):
         self.historyPanel.SetSize(size = (self.windowWidth+25,self.panelHeight))
         self.historyPanel.SetPosition((0,0))
 
-        self.historListbox = wx.ListBox(self.historyPanel,pos=(startX,nextY),size=(self.windowWidth,self.windowHeight-40))
+        self.historListbox = wx.ListBox(self.historyPanel,pos=(startX,nextY),size=(self.windowWidth,self.panelHeight-50))
         self._updateHistoryList()
 
         self.popupmenuHistory = wx.Menu()
@@ -212,9 +212,10 @@ class WallpaperFrame(wx.Frame):
     # called by App
     #
 
-    def setStatus(self,text,statusDict):
-        self.labelStatus.SetValue(text)
-        self.labelStatus.Update()
+    def setStatus(self,statusDict):
+        if 'status' in statusDict:
+            self.labelStatus.SetValue(statusDict['status'])
+            self.labelStatus.Update()
         if 'blockChange' in statusDict:
             if statusDict['blockChange']:
                 self.changeNowButton.Disable()

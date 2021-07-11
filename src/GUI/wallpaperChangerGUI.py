@@ -28,9 +28,9 @@ class WallpaperChangerGUI(wx.App):
         self.frame.Destroy()
         wx.CallAfter(self.Destroy)
 
-    def setStatus(self,text,statusDict):
-        self.frame.setStatus(text,statusDict)
-        self.taskbar.setStatus(text,statusDict)
+    def setStatus(self,statusDict):
+        self.frame.setStatus(statusDict)
+        self.taskbar.setStatus(statusDict)
     
     #
     # main app callbacks
