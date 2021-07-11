@@ -4,9 +4,9 @@ import shutil
 from win32api import GetSystemMetrics
 
 from resources import Resources
-from GUI import WallpaperChangerGUI
-from redditImageSource import RedditImageSource
-from folderImageSource import FolderImageSource
+from GUI.wallpaperChangerGUI import WallpaperChangerGUI
+from ImageSources.redditImageSource import RedditImageSource
+from ImageSources.folderImageSource import FolderImageSource
 from changeWallpaperThread import ChangeWallpaperThread
 
 class MainApp:
@@ -28,6 +28,9 @@ class MainApp:
 
         with open(Resources['CONFIG_YAML'],'rt') as f:
             self.config = yaml.load(f,Loader=yaml.SafeLoader)
+
+        configPath=Resources['CONFIG_YAML']
+        shutil.copyfile(configPath,configPath+'.bak')
         
         self.sourceMapping ={
             'subreddit':RedditImageSource,
@@ -76,12 +79,12 @@ class MainApp:
 
     def saveConfig(self):
         configPath=Resources['CONFIG_YAML']
-        shutil.copyfile(configPath,configPath+'.bak')
         with open(configPath,'wt') as f:
             yaml.dump(self.config,f,Dumper=yaml.SafeDumper,sort_keys=False)
         self.log.info(f'MainApp: saved config {configPath}')
 
     def handleExit(self):
+        self.setStatus('Closing...')
         self.wallpaperReplaceThread.stop()
         self.saveConfig()
         self.GUI.exitGUI()

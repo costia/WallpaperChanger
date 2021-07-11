@@ -1,35 +1,8 @@
 import wx
 import wx.adv
-from resources import Resources
 import logging
-
-
-def createMenuItem(menu, label, func):
-    item = wx.MenuItem(menu, -1, label)
-    menu.Bind(wx.EVT_MENU, func, id=item.GetId())
-    menu.Append(item)
-    return item
-
-
-class TaskBarIcon(wx.adv.TaskBarIcon):
-    def __init__(self,wxApp):
-        super(TaskBarIcon, self).__init__()
-        self.wxApp = wxApp
-        self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
-        
-        self.icon = wx.Icon(wx.Bitmap(Resources['ICON_PATH']))
-        self.SetIcon(self.icon, Resources['APP_NAME'])
-        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, lambda x: self.wxApp.toggleShow())
-    
-    def setStatus(self,text,statusDict):
-        self.SetIcon(self.icon, text)
-    
-    def CreatePopupMenu(self):
-        menu = wx.Menu()
-        createMenuItem(menu, 'Change now',  lambda x: self.wxApp.changeWallpaper())
-        createMenuItem(menu, 'Exit',  lambda x: self.wxApp.handleExit())
-        return menu
-
+from resources import Resources
+from GUI.common import createMenuItem
 
 class WallpaperFrame(wx.Frame):
     def __init__(self,wxApp,config,sourceTypes):
@@ -182,44 +155,3 @@ class WallpaperFrame(wx.Frame):
                 break
             selectedItem +=1
         return selectedItem
-
-class WallpaperChangerGUI(wx.App):
-    def __init__(self,mainApp,sourceTypes):
-        super(WallpaperChangerGUI, self).__init__()
-        self.mainApp = mainApp
-        self.sourceTypes = sourceTypes
-        self.taskbar = TaskBarIcon(self)
-        self.frame = WallpaperFrame(self,mainApp.config,sourceTypes)
-        self.frame.Show(True)
-    
-    def handleExit(self):
-        self.mainApp.handleExit()
-    
-    def exitGUI(self):
-        self.taskbar.RemoveIcon()
-        self.taskbar.Destroy()
-        self.frame.Destroy()
-        wx.CallAfter(self.Destroy)
-    
-    def configChanged(self):
-        self.mainApp.configChanged()
-
-    def setStatus(self,text,statusDict):
-        self.frame.setStatus(text,statusDict)
-        self.taskbar.setStatus(text,statusDict)
-    
-    def changeWallpaper(self):
-        self.mainApp.changeWallpaper()
-    
-    def resetSources(self):
-        self.mainApp.resetSources()
-    
-    def toggleShow(self):
-        if self.frame.IsShown():
-            self.frame.Show(False)
-        else:
-            self.frame.Show(True)
-            if self.frame.IsIconized():
-                self.frame.Iconize(False)
-
-
