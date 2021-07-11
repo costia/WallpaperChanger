@@ -4,7 +4,7 @@ Auto wallpaper changer, taking random images from multiple sources.
 
 <br/>
 
-![Taskbar icon tooltip](https://i.imgur.com/7yhsG0c.png, "Taskbar icon tooltip")
+![Taskbar icon tooltip](https://i.imgur.com/DOczHeq.png, "Taskbar icon tooltip")
 
 <br/>
 
