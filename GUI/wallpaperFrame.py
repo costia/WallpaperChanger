@@ -4,12 +4,15 @@ import logging
 from resources import Resources
 from GUI.common import createMenuItem
 from ImageSources import getSourceTypes
+from database import WallpaperDatabase
 
 class WallpaperFrame(wx.Frame):
     def __init__(self,wxApp,config):
         super(WallpaperFrame, self).__init__(None, style= wx.CAPTION |	 wx.CLOSE_BOX | wx.MINIMIZE_BOX)
         self.SetTitle(Resources['APP_NAME'])
         self.SetIcon(wx.Icon(wx.Bitmap(Resources['ICON_PATH'])))
+
+        self.db = WallpaperDatabase()
         
         self.windowWidth = 300
         self.windowHeight = 490+30
@@ -20,8 +23,7 @@ class WallpaperFrame(wx.Frame):
         self.config = config
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
-
-        
+        self.historyLength = 40
 
         self.popupmenu = wx.Menu()
         createMenuItem(self.popupmenu, 'Minimize',  lambda x: self.wxApp.toggleShow())
@@ -64,6 +66,11 @@ class WallpaperFrame(wx.Frame):
         self.selectMainPanelBtn.SetFont(self.baseFont.Bold())
         self.selectHistoryPanelBtn.SetFont(self.baseFont)
     
+    def _updateHistoryList(self):
+        names,links = self.db.getLatest(self.historyLength)
+        self.historySources = links
+        self.historListbox.SetItems(names)
+        self.historListbox.SetSelection(0)
 
     def _buildHistoryPanel(self,nextY):
         startX = 5
@@ -71,10 +78,24 @@ class WallpaperFrame(wx.Frame):
         self.historyPanel.SetSize(size = (self.windowWidth+25,self.panelHeight))
         self.historyPanel.SetPosition((0,0))
 
-        self.historListbox = wx.ListBox(self.historyPanel,pos=(startX,nextY),size=(self.windowWidth,self.windowHeight-40),style=wx.CB_READONLY)
+        self.historListbox = wx.ListBox(self.historyPanel,pos=(startX,nextY),size=(self.windowWidth,self.windowHeight-40))
+        self._updateHistoryList()
 
+        self.popupmenuHistory = wx.Menu()
+        createMenuItem(self.popupmenuHistory, 'Copy selection source',  self._onCopySource)
+        self.historListbox.Bind(wx.EVT_CONTEXT_MENU, self._onShowHistoryPopup)
 
         self.historyPanel.Show(False)
+
+    def _onShowHistoryPopup(self,event):
+        self.historyPanel.PopupMenu(self.popupmenuHistory,self.ScreenToClient(event.GetPosition()))
+
+    def _onCopySource(self,event):
+        id = self.historListbox.GetSelection()
+        source = self.historySources[id]
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(wx.TextDataObject(source))
+            wx.TheClipboard.Close()
 
     def _buildMainPanel(self,nextY):
         startX = 5
@@ -102,7 +123,7 @@ class WallpaperFrame(wx.Frame):
         self.sourceAddButton = wx.Button(self.mainPanel,-1,'Add new source',pos=(startX,nextY),size=(self.windowWidth,20))
         nextY += 30
 
-        self.sourcesListbox = wx.ListBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,100),style=wx.CB_DROPDOWN|wx.CB_READONLY)
+        self.sourcesListbox = wx.ListBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,100))
         self._updateSourcesList()
         nextY += 100
         self.sourceRemovButton = wx.Button(self.mainPanel,-1,'Remove source',pos=(startX,nextY),size=(self.windowWidth,20))
@@ -199,6 +220,9 @@ class WallpaperFrame(wx.Frame):
                 self.changeNowButton.Disable()
             else:
                 self.changeNowButton.Enable()
+        if 'updateHistory' in statusDict and statusDict['updateHistory']:      
+            self._updateHistoryList()
+
 
     #
     # App callbacks

@@ -40,6 +40,18 @@ class WallpaperDatabase:
         f.close()
         return hash_md5.hexdigest()
 
+    def getLatest(self,count):
+        db = sqlite3.connect(Resources['DB_FILE'])
+        cursor = db.cursor()
+        sql = 'SELECT imageName,imageSource,date FROM history ORDER BY date DESC LIMIT ?'
+        cursor.execute(sql,(count,))
+        res = cursor.fetchall()
+        names = [x[0] for x in res]
+        sources = [x[1] for x in res]
+        db.close()
+        return names, sources
+
+
     def checkDuplicate(self,image):
         ret = None
         time = datetime.datetime.utcnow() - datetime.timedelta(days=30)

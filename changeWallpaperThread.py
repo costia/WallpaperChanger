@@ -63,6 +63,7 @@ class ChangeWallpaperThread(threading.Thread):
                 'image':image
             }
             self.db.addEntry(dbEntry)
+            self.setStatus(f'{selectedSource.getName()}: {metaName}',{'updateHistory':True})
                 
         self.minutesPassed=0
 
