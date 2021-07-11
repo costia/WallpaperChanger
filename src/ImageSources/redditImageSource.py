@@ -59,6 +59,12 @@ class RedditImageSource:
             params = {'limit':100,'restrict_sr':1,'sort':sortType,'t':timeLimit}
             response = requests.get(self.APIendpoint,headers=headers,params=params)
             response = json.loads(response.content)
+            followAfter = random.randint(0,10)
+            for _ in range(followAfter):
+                afterTag = response['data']['after']
+                params = {'limit':100,'restrict_sr':1,'sort':sortType,'t':timeLimit,'after':afterTag}
+                response = requests.get(self.APIendpoint,headers=headers,params=params)
+                response = json.loads(response.content)
             response = response['data']['children']
             postData = response[random.randint(0,len(response)-1)]['data']
             pass
