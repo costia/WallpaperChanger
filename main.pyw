@@ -76,6 +76,7 @@ class MainApp:
         self.log.info(f'MainApp: saved config {configPath}')
 
     def handleExit(self):
+        self.log.info(f'MainApp: closing')
         self.setStatus('Closing...')
         self.wallpaperReplaceThread.stop()
         self.saveConfig()
