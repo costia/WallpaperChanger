@@ -141,7 +141,7 @@ class WallpaperFrame(wx.Frame):
         nextY += 50
 
         self.labelStatus = wx.TextCtrl(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,40),style = wx.TE_READONLY| wx.TE_MULTILINE| wx.TE_NO_VSCROLL ) 
-        self.labelStatus.SetLabelText('Status')
+        self.labelStatus.SetLabelText('Initializing...')
         self.labelStatus.SetBackgroundColour((173,173,173))
         nextY += 30
 

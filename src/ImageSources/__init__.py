@@ -22,10 +22,18 @@ def ImageSource(sourceConfig):
 
     sourceType = sourceConfig['type']
     if not sourceType in _sourceMapping:
-        log.error(f'MainApp: unknow source type {sourceType}')
+        log.error(f'ImageSource: unknown source type {sourceType}')
         return None
     instanceType = _sourceMapping[sourceType]
-    return instanceType(sourceConfig)
+
+    configStr=str(sourceConfig['config'])
+    log.info(f'ImageSource: instanciating {sourceType}:{configStr}')
+    try:
+        instance = instanceType(sourceConfig)
+    except:
+        instance = None
+        log.error(f'ImageSource: failed to instanciate {sourceType}')
+    return instance
 
 def registerAllTypes():
     # fileList = glob.glob(os.path.dirname(__file__)+'/*.py')

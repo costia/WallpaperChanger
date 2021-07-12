@@ -11,6 +11,7 @@ class ChangeWallpaperThread(threading.Thread):
         super(ChangeWallpaperThread, self).__init__()
         self.config = config
         self.setStatus = setStatus
+        self.imageSources = None
         self.stopEvent = threading.Event()
         self.interruptWaitEvent = threading.Event()
         self.db = WallpaperDatabase()
@@ -76,6 +77,9 @@ class ChangeWallpaperThread(threading.Thread):
 
     def run(self):
         while not self.stopEvent.is_set():
+            while not self.imageSources:
+                self.log.info('ChangeWallpaperThread: waiting for sources to populate')
+                time.sleep(1)
             self._changeWallpaper()
             self.minutesPassed=0
             while self.minutesPassed<self.config['changePeriod'] and not self.interruptWaitEvent.is_set():

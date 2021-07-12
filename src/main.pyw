@@ -3,6 +3,8 @@ import yaml
 import shutil
 from win32api import GetSystemMetrics
 import copy
+import threading
+import wx
 
 from resources import Resources
 from GUI.wallpaperChangerGUI import WallpaperChangerGUI
@@ -36,10 +38,10 @@ class MainApp:
         
         self.GUI = WallpaperChangerGUI(self)
 
-        self.wallpaperReplaceThread = ChangeWallpaperThread(self.config,self.setStatus)
-        self.resetSources()
-        
+        self.wallpaperReplaceThread = ChangeWallpaperThread(self.config,self.setStatus)        
         self.wallpaperReplaceThread.start()
+
+        self.resetSources()
         self.GUI.MainLoop()
         pass
 
@@ -47,6 +49,11 @@ class MainApp:
         self.GUI.setStatus(statusDict)
     
     def resetSources(self):
+        self.log.info('MainApp: started resetSources thread')
+        resetThread = threading.Thread(target = self._resetSources)
+        resetThread.start()
+    
+    def _resetSources(self):
         newSources = []
         for source in self.config['sources']:
             redditArgs = {
@@ -62,7 +69,8 @@ class MainApp:
                 newSources.append(sourceInstance)
         self.imageSources = newSources
         self.wallpaperReplaceThread.setSources(self.imageSources)
-        self.GUI.setStatus({'imageSources':self.imageSources})
+        wx.CallAfter(self.GUI.setStatus,{'imageSources':self.imageSources})
+        self.log.info('MainApp: resetSources thread done')
         
     def configChanged(self):
         self.saveConfig()
