@@ -39,7 +39,10 @@ class ChangeWallpaperThread(threading.Thread):
 
             selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
             self.log.info(f'changeWallpaper: selected source {selectedSource.getName()}')
-            retDict = selectedSource.getImage()
+            try:
+                retDict = selectedSource.getImage()
+            except:
+                retDict = None
             if retDict:
                 image = retDict['image']
                 metaName = retDict['metaName']
