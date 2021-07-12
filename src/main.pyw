@@ -60,7 +60,7 @@ class MainApp:
         self.config['sources']=newList
         self.imageSources = newSourceList
         self._saveConfig()
-        self.wallpaperReplaceThread.setSources(self.imageSources)
+        self.wallpaperReplaceThread.notifyChangeThread({'setSources':self.imageSources})
         self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info(f'MainApp: removed source {removedSource.getTypeName()}:{removedSource.getName()}')
         
@@ -88,7 +88,7 @@ class MainApp:
             self.config['sources'].append(sourceDict)
             self.imageSources = newSources
             self._saveConfig()
-            self.wallpaperReplaceThread.setSources(self.imageSources)
+            self.wallpaperReplaceThread.notifyChangeThread({'setSources':self.imageSources})
             self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: addSources thread done')
 
@@ -113,17 +113,14 @@ class MainApp:
             if sourceInstance:
                 newSources.append(sourceInstance)
         self.imageSources = newSources
-        self.wallpaperReplaceThread.setSources(self.imageSources)
+        self.wallpaperReplaceThread.notifyChangeThread({'setSources':self.imageSources})
         self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: resetSources thread done')
     
     def _setRefreshTimeout(self,timeout):
         self.config['changePeriod']=timeout
-        self.wallpaperReplaceThread.setRefreshTimeout(timeout)
+        self.wallpaperReplaceThread.notifyChangeThread({'setRefreshTimeout':timeout})
         self._saveConfig()
-
-    def _changeWallpaper(self):
-        self.wallpaperReplaceThread.changeWallpaper()
 
     def _saveConfig(self):
         configPath=Resources['CONFIG_YAML']
@@ -135,14 +132,14 @@ class MainApp:
         self.log.info(f'MainApp: closing')
         self.notifyGUI({'status':'Closing...'})
         self._saveConfig()
-        self.wallpaperReplaceThread.stop()
+        self.wallpaperReplaceThread.notifyChangeThread({'stop':True})
         self.notifyGUI({'exitGUI':True})
     
     def notifyMain(self,argsDict):
         if 'handleExit' in argsDict and argsDict['handleExit']:
             self._handleExit()
         if 'changeWallpaper' in argsDict and argsDict['changeWallpaper']:
-            self._changeWallpaper()       
+            self.wallpaperReplaceThread.notifyChangeThread({'changeWallpaper':True})     
         if 'removeSource' in argsDict:
             self._removeSource(argsDict['removeSource'])
         if 'addSource' in argsDict:

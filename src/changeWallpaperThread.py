@@ -18,21 +18,22 @@ class ChangeWallpaperThread(threading.Thread):
         self.interruptWaitEvent = threading.Event()
         self.db = WallpaperDatabase()
         self.log = logging.getLogger('WallpaperChanger')
+
+    def notifyChangeThread(self,argsDict):
+        if 'stop' in argsDict and argsDict['stop']:
+            self._stopChangeThread()
+        if 'setSources' in argsDict:
+            self.imageSources = argsDict['setSources']
+        if 'setRefreshTimeout' in argsDict:
+            self.changePeriod = argsDict['setRefreshTimeout']
+        if 'changeWallpaper' in argsDict and argsDict['changeWallpaper']:
+            self.interruptWaitEvent.set()
     
-    def stop(self):
+    def _stopChangeThread(self):
         self.stopEvent.set()
         self.interruptWaitEvent.set()
         self.join()
-
-    def setRefreshTimeout(self,timeout):
-        self.changePeriod = timeout
-
-    def setSources(self,imageSources):
-        self.imageSources = imageSources
-
-    def changeWallpaper(self):
-        self.interruptWaitEvent.set()
-
+    
     def _changeWallpaper(self):
         self.notifyGUI({'status':'Changing wallpaper','blockWallpaperChange':True})
         image = None
