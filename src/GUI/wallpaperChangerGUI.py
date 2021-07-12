@@ -31,12 +31,12 @@ class WallpaperChangerGUI(wx.App):
     #
     # called from main
     #
-    def setStatus(self,statusDict):
+    def notifyGUI(self,statusDict):
         if 'exitGUI' in statusDict and statusDict['exitGUI']:
             self._exitGUI()
         else:
-            self.frame.setStatus(statusDict)
-            self.taskbar.setStatus(statusDict)
+            self.frame.notifyGUI(statusDict)
+            self.taskbar.notifyGUI(statusDict)
     
     #
     # main app callbacks

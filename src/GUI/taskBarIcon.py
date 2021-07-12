@@ -23,6 +23,6 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
     #
     # called by App
     #
-    def setStatus(self,statusDict):
+    def notifyGUI(self,statusDict):
         if 'status' in statusDict:
             self.SetIcon(self.icon, statusDict['status'])

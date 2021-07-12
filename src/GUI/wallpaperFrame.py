@@ -219,7 +219,7 @@ class WallpaperFrame(wx.Frame):
     # called by App
     #
 
-    def setStatus(self,statusDict):
+    def notifyGUI(self,statusDict):
         if 'status' in statusDict:
             self.labelStatus.SetValue(statusDict['status'])
             self.labelStatus.Update()

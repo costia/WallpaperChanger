@@ -38,19 +38,19 @@ class MainApp:
         
         self.GUI = WallpaperChangerGUI(self)
 
-        self.wallpaperReplaceThread = ChangeWallpaperThread(self.config,self.setStatus)        
+        self.wallpaperReplaceThread = ChangeWallpaperThread(self.config,self.notifyGUI)        
         self.wallpaperReplaceThread.start()
 
         self._resetSources()
         self.GUI.MainLoop()
         pass
 
-    def setStatus(self,statusDict):
-        wx.CallAfter(self.GUI.setStatus,statusDict)
+    def notifyGUI(self,statusDict):
+        wx.CallAfter(self.GUI.notifyGUI,statusDict)
 
     def removeSource(self,index):
         self.log.info(f'MainApp: removed source index {index}')
-        self.setStatus({'lockSourceEdit':True})
+        self.notifyGUI({'lockSourceEdit':True})
         newSourceList=copy.copy(self.imageSources)
         removedSource = newSourceList[index]
         del newSourceList[index]
@@ -61,14 +61,14 @@ class MainApp:
         self.imageSources = newSourceList
         self._configChanged()
         self.wallpaperReplaceThread.setSources(self.imageSources)
-        self.setStatus({'imageSources':self.imageSources,'lockSourceEdit':False})
+        self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info(f'MainApp: removed source {removedSource.getTypeName()}:{removedSource.getName()}')
         
     def addSource(self,sourceDict):
         configString = str(sourceDict['config'])
         sourceType = sourceDict['type']
         self.log.info(f'MainApp: adding source {sourceType}:{configString}')
-        self.setStatus({'lockSourceEdit':True})
+        self.notifyGUI({'lockSourceEdit':True})
         addThread = threading.Thread(target = self._addSource_thread,args=(sourceDict,))
         addThread.start()
     
@@ -89,12 +89,12 @@ class MainApp:
             self.imageSources = newSources
             self._configChanged()
             self.wallpaperReplaceThread.setSources(self.imageSources)
-            self.setStatus({'imageSources':self.imageSources,'lockSourceEdit':False})
+            self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: addSources thread done')
 
     def _resetSources(self):
         self.log.info('MainApp: started resetSources thread')
-        self.setStatus({'lockSourceEdit':True})
+        self.notifyGUI({'lockSourceEdit':True})
         resetThread = threading.Thread(target = self._resetSources_thread)
         resetThread.start()
     
@@ -114,7 +114,7 @@ class MainApp:
                 newSources.append(sourceInstance)
         self.imageSources = newSources
         self.wallpaperReplaceThread.setSources(self.imageSources)
-        self.setStatus({'imageSources':self.imageSources,'lockSourceEdit':False})
+        self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: resetSources thread done')
     
     def setRefreshTimeout(self,timeout):
@@ -136,10 +136,10 @@ class MainApp:
 
     def handleExit(self):
         self.log.info(f'MainApp: closing')
-        self.setStatus({'status':'Closing...'})
+        self.notifyGUI({'status':'Closing...'})
         self.saveConfig()
         self.wallpaperReplaceThread.stop()
-        self.setStatus({'exitGUI':True})
+        self.notifyGUI({'exitGUI':True})
 
 def main():
     app = MainApp()

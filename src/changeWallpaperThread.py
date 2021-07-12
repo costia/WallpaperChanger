@@ -7,12 +7,12 @@ from osChangeWallpaper import setWallpaper
 from database import WallpaperDatabase
 
 class ChangeWallpaperThread(threading.Thread):
-    def __init__(self,config,setStatus):
+    def __init__(self,config,notifyGUI):
         super(ChangeWallpaperThread, self).__init__()
         self.failRetries = config['failRetries']
         self.failWait = config['failWait']
         self.changePeriod = config['changePeriod']
-        self.setStatus = setStatus
+        self.notifyGUI = notifyGUI
         self.imageSources = None
         self.stopEvent = threading.Event()
         self.interruptWaitEvent = threading.Event()
@@ -34,13 +34,13 @@ class ChangeWallpaperThread(threading.Thread):
         self.interruptWaitEvent.set()
 
     def _changeWallpaper(self):
-        self.setStatus({'status':'Changing wallpaper','blockWallpaperChange':True})
+        self.notifyGUI({'status':'Changing wallpaper','blockWallpaperChange':True})
         image = None
         retries = 0
         while not image:
             if not self.imageSources or len(self.imageSources)==0:
                 self.log.error('changeWallpaper: no image sources found')
-                self.setStatus({'status':f'No image sources found'})
+                self.notifyGUI({'status':f'No image sources found'})
                 break
 
             selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
@@ -54,15 +54,15 @@ class ChangeWallpaperThread(threading.Thread):
                 metaName = retDict['metaName']
                 dup = self.db.checkDuplicate(image)
                 if dup:
-                    self.setStatus({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                    self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
                     self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
                     image = None
             else:
-                self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying'})
+                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying'})
             
             retries +=1
             if retries>self.failRetries:
-                self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockWallpaperChange':False})
+                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockWallpaperChange':False})
                 break
             self.stopEvent.wait(self.failWait)
             if self.stopEvent.is_set():
@@ -70,7 +70,7 @@ class ChangeWallpaperThread(threading.Thread):
         
         if image:
             setWallpaper(image)
-            self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}', 'blockWallpaperChange':False})
+            self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}', 'blockWallpaperChange':False})
             dbEntry={
                 'sourceType':selectedSource.getTypeName(),
                 'sourceName':selectedSource.getName(),
@@ -79,7 +79,7 @@ class ChangeWallpaperThread(threading.Thread):
                 'image':image
             }
             self.db.addEntry(dbEntry)
-            self.setStatus({'updateHistory':True})
+            self.notifyGUI({'updateHistory':True})
             
 
     def run(self):
@@ -94,6 +94,6 @@ class ChangeWallpaperThread(threading.Thread):
             while self.minutesPassed<self.changePeriod  and not self.interruptWaitEvent.is_set():
                 self.interruptWaitEvent.wait(60)
                 self.minutesPassed +=1
-                # self.setStatus({'status':f'Time since last refresh: {self.minutesPassed} minutes'})
+                # self.notifyGUI({'status':f'Time since last refresh: {self.minutesPassed} minutes'})
                 assert(self.changePeriod >=1)
             self.interruptWaitEvent.clear()
