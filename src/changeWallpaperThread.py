@@ -41,7 +41,7 @@ class ChangeWallpaperThread(threading.Thread):
         while not image:
             if not self.imageSources or len(self.imageSources)==0:
                 self.log.error('changeWallpaper: no image sources found')
-                self.notifyGUI({'status':f'No image sources found','blockWallpaperChange':False})
+                self.notifyGUI({'status':f'No image sources found'})
                 break
 
             selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
@@ -63,7 +63,7 @@ class ChangeWallpaperThread(threading.Thread):
             
             retries +=1
             if retries>self.failRetries:
-                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockWallpaperChange':False})
+                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted'})
                 break
             self.stopEvent.wait(self.failWait)
             if self.stopEvent.is_set():
@@ -71,7 +71,7 @@ class ChangeWallpaperThread(threading.Thread):
         
         if image:
             setWallpaper(image)
-            self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}', 'blockWallpaperChange':False})
+            self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}'})
             dbEntry={
                 'sourceType':selectedSource.getTypeName(),
                 'sourceName':selectedSource.getName(),
@@ -81,15 +81,15 @@ class ChangeWallpaperThread(threading.Thread):
             }
             self.db.addEntry(dbEntry)
             self.notifyGUI({'updateHistory':True})
+        
+        self.notifyGUI({'blockWallpaperChange':False})
             
 
     def run(self):
-        while not self.stopEvent.is_set():
-            while self.imageSources is None :
+        while (self.imageSources is None) and (not self.stopEvent.is_set()):
                 self.log.info('ChangeWallpaperThread: waiting for sources to populate')
-                self.stopEvent.wait(1)
-                if self.stopEvent.is_set():
-                    break
+                self.stopEvent.wait(0.05)
+        while not self.stopEvent.is_set():
             self._changeWallpaper()
             self.minutesPassed=0
             while self.minutesPassed<self.changePeriod  and not self.interruptWaitEvent.is_set():
