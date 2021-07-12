@@ -138,7 +138,7 @@ class RedditImageSource:
             postData = self.pseudoRandomCache[random.randint(0,len(self.pseudoRandomCache)-1)]['data']
 
             # 1% chance to refresh cache
-            if random.randint(0,100)==0:
+            if random.randint(0,min(100,len(self.pseudoRandomCache)//5))==0:
                 if not self.pseudoRandomCacheThread:
                     self.log.info(f'RedditImageSource: {self.getName()} refreshing pseudo random cache')
                     self.pseudoRandomCacheThread = RedditPseudoRandomCacheThread(self)
