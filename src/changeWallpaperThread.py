@@ -9,7 +9,9 @@ from database import WallpaperDatabase
 class ChangeWallpaperThread(threading.Thread):
     def __init__(self,config,setStatus):
         super(ChangeWallpaperThread, self).__init__()
-        self.config = config
+        self.failRetries = config['failRetries']
+        self.failWait = config['failWait']
+        self.changePeriod = config['changePeriod']
         self.setStatus = setStatus
         self.imageSources = None
         self.stopEvent = threading.Event()
@@ -21,6 +23,9 @@ class ChangeWallpaperThread(threading.Thread):
         self.stopEvent.set()
         self.interruptWaitEvent.set()
         self.join()
+
+    def setRefreshTimeout(self,timeout):
+        self.changePeriod = timeout
 
     def setSources(self,imageSources):
         self.imageSources = imageSources
@@ -56,10 +61,10 @@ class ChangeWallpaperThread(threading.Thread):
                 self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying'})
             
             retries +=1
-            if retries>self.config['failRetries']:
+            if retries>self.failRetries:
                 self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockWallpaperChange':False})
                 break
-            time.sleep(self.config['failWait'])
+            time.sleep(self.failWait)
         
         if image:
             setWallpaper(image)
@@ -82,9 +87,9 @@ class ChangeWallpaperThread(threading.Thread):
                 time.sleep(1)
             self._changeWallpaper()
             self.minutesPassed=0
-            while self.minutesPassed<self.config['changePeriod'] and not self.interruptWaitEvent.is_set():
+            while self.minutesPassed<self.changePeriod  and not self.interruptWaitEvent.is_set():
                 self.interruptWaitEvent.wait(60)
                 self.minutesPassed +=1
                 # self.setStatus({'status':f'Time since last refresh: {self.minutesPassed} minutes'})
-                assert(self.config['changePeriod']>=1)
+                assert(self.changePeriod >=1)
             self.interruptWaitEvent.clear()

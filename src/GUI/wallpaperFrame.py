@@ -23,7 +23,7 @@ class WallpaperFrame(wx.Frame):
         self.timeSelections = {'5min':5,'10min':10,'30min':30,'1h':60,'4h':60*4,'12h':60*12,'24h':60*24}
 
         self.sourceTypes = getSourceTypes()
-        self.config = config
+        self.wallpaperRefreshTimeout = config['changePeriod']
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
         self.historyLength = 40
@@ -170,15 +170,15 @@ class WallpaperFrame(wx.Frame):
     def _onTimeSelectChange(self,event):
         selected = self.timeSelect.GetValue()
         selectedPeriod = self.timeSelections[selected]
-        self.config['changePeriod'] = selectedPeriod
-        self.configChanged()
+        self.wxApp.setRefreshTimeout(selectedPeriod)
+        self.wallpaperRefreshTimeout = selectedPeriod
         self.log.info(f'GUI_WallpaperFrame: wallpaper refresh time changed to {selectedPeriod}')
 
     def _onShowPopup(self,event):
         self.PopupMenu(self.popupmenu,self.ScreenToClient(event.GetPosition()))
 
     def _getCurrentTimeSelectID(self):
-        currentSelection=self.config['changePeriod']
+        currentSelection=self.wallpaperRefreshTimeout
         timesInMinutes = [self.timeSelections[x] for x in self.timeSelections]
         if currentSelection>timesInMinutes[-1]:
             currentSelection=timesInMinutes[-1]
@@ -187,7 +187,9 @@ class WallpaperFrame(wx.Frame):
             while timesInMinutes[ind]<currentSelection:
                 ind +=1
             currentSelection = timesInMinutes[ind]
-        self.config['changePeriod'] = currentSelection
+        if self.wallpaperRefreshTimeout != currentSelection:
+            self.wxApp.setRefreshTimeout(currentSelection)
+            self.wallpaperRefreshTimeout = currentSelection
         selectedItem = 0
         for x in self.timeSelections:
             if self.timeSelections[x]==currentSelection:

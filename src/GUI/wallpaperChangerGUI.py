@@ -49,5 +49,8 @@ class WallpaperChangerGUI(wx.App):
     def addSource(self,sourceDict):
         self.mainApp.addSource(sourceDict)
     
+    def setRefreshTimeout(self,timeout):
+        self.mainApp.setRefreshTimeout(timeout)
+    
     
     
