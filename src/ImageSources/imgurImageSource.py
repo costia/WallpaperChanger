@@ -18,6 +18,7 @@ class ImgurImageSource:
         self.height = argsDict['height']
         self.ARmargin = argsDict['aspectRatioMargin']
         self.minMP = self.width*self.height*(argsDict['minResolutionRatio']**2)
+        self.minMP = min(self.minMP,1920*1080)
         self.requiredAR = self.width/self.height
 
         self.tempDir = Resources['TEMP_DIR']
