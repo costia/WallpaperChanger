@@ -12,18 +12,23 @@ class ChangeWallpaperThread(threading.Thread):
         self.config = config
         self.setStatus = setStatus
         self.stopEvent = threading.Event()
+        self.interruptWaitEvent = threading.Event()
         self.db = WallpaperDatabase()
         self.log = logging.getLogger('WallpaperChanger')
     
     def stop(self):
         self.stopEvent.set()
+        self.interruptWaitEvent.set()
+        self.join()
 
     def setSources(self,imageSources):
         self.imageSources = imageSources
 
     def changeWallpaper(self):
+        self.interruptWaitEvent.set()
+
+    def _changeWallpaper(self):
         self.setStatus({'status':'Changing wallpaper','blockChange':True})
-        self.minutesPassed=0
         image = None
         retries = 0
         while not image:
@@ -64,14 +69,15 @@ class ChangeWallpaperThread(threading.Thread):
             }
             self.db.addEntry(dbEntry)
             self.setStatus({'updateHistory':True})
-                
-        self.minutesPassed=0
+            
 
     def run(self):
         while not self.stopEvent.is_set():
-            self.changeWallpaper()
-            while self.minutesPassed<self.config['changePeriod']:
-                time.sleep(60)
+            self._changeWallpaper()
+            self.minutesPassed=0
+            while self.minutesPassed<self.config['changePeriod'] and not self.interruptWaitEvent.is_set():
+                self.interruptWaitEvent.wait(60)
                 self.minutesPassed +=1
                 # self.setStatus({'status':f'Time since last refresh: {self.minutesPassed} minutes'})
                 assert(self.config['changePeriod']>=1)
+            self.interruptWaitEvent.clear()

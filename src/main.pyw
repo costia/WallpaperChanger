@@ -79,8 +79,8 @@ class MainApp:
     def handleExit(self):
         self.log.info(f'MainApp: closing')
         self.setStatus({'status':'Closing...'})
-        self.wallpaperReplaceThread.stop()
         self.saveConfig()
+        self.wallpaperReplaceThread.stop()
         self.GUI.exitGUI()
 
 def main():
