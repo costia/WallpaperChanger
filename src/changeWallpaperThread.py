@@ -40,7 +40,7 @@ class ChangeWallpaperThread(threading.Thread):
         while not image:
             if not self.imageSources or len(self.imageSources)==0:
                 self.log.error('changeWallpaper: no image sources found')
-                self.notifyGUI({'status':f'No image sources found'})
+                self.notifyGUI({'status':f'No image sources found','blockWallpaperChange':False})
                 break
 
             selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
@@ -58,7 +58,7 @@ class ChangeWallpaperThread(threading.Thread):
                     self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
                     image = None
             else:
-                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying'})
+                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying {retries}'})
             
             retries +=1
             if retries>self.failRetries:
@@ -84,7 +84,7 @@ class ChangeWallpaperThread(threading.Thread):
 
     def run(self):
         while not self.stopEvent.is_set():
-            while not self.imageSources :
+            while self.imageSources is None :
                 self.log.info('ChangeWallpaperThread: waiting for sources to populate')
                 self.stopEvent.wait(1)
                 if self.stopEvent.is_set():

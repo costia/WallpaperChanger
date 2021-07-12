@@ -45,10 +45,10 @@ class MainApp:
         self.GUI.MainLoop()
         pass
 
-    def notifyGUI(self,statusDict):
-        wx.CallAfter(self.GUI.notifyGUI,statusDict)
+    def notifyGUI(self,argsDict):
+        wx.CallAfter(self.GUI.notifyGUI,argsDict)
 
-    def removeSource(self,index):
+    def _removeSource(self,index):
         self.log.info(f'MainApp: removed source index {index}')
         self.notifyGUI({'lockSourceEdit':True})
         newSourceList=copy.copy(self.imageSources)
@@ -59,12 +59,12 @@ class MainApp:
 
         self.config['sources']=newList
         self.imageSources = newSourceList
-        self._configChanged()
+        self._saveConfig()
         self.wallpaperReplaceThread.setSources(self.imageSources)
         self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info(f'MainApp: removed source {removedSource.getTypeName()}:{removedSource.getName()}')
         
-    def addSource(self,sourceDict):
+    def _addSource(self,sourceDict):
         configString = str(sourceDict['config'])
         sourceType = sourceDict['type']
         self.log.info(f'MainApp: adding source {sourceType}:{configString}')
@@ -87,7 +87,7 @@ class MainApp:
             newSources.append(sourceInstance)
             self.config['sources'].append(sourceDict)
             self.imageSources = newSources
-            self._configChanged()
+            self._saveConfig()
             self.wallpaperReplaceThread.setSources(self.imageSources)
             self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: addSources thread done')
@@ -117,29 +117,39 @@ class MainApp:
         self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: resetSources thread done')
     
-    def setRefreshTimeout(self,timeout):
+    def _setRefreshTimeout(self,timeout):
         self.config['changePeriod']=timeout
         self.wallpaperReplaceThread.setRefreshTimeout(timeout)
-        self._configChanged()
+        self._saveConfig()
 
-    def _configChanged(self):
-        self.saveConfig()
-
-    def changeWallpaper(self):
+    def _changeWallpaper(self):
         self.wallpaperReplaceThread.changeWallpaper()
 
-    def saveConfig(self):
+    def _saveConfig(self):
         configPath=Resources['CONFIG_YAML']
         with open(configPath,'wt') as f:
             yaml.dump(self.config,f,Dumper=yaml.SafeDumper,sort_keys=False)
         self.log.info(f'MainApp: saved config {configPath}')
 
-    def handleExit(self):
+    def _handleExit(self):
         self.log.info(f'MainApp: closing')
         self.notifyGUI({'status':'Closing...'})
-        self.saveConfig()
+        self._saveConfig()
         self.wallpaperReplaceThread.stop()
         self.notifyGUI({'exitGUI':True})
+    
+    def notifyMain(self,argsDict):
+        if 'handleExit' in argsDict and argsDict['handleExit']:
+            self._handleExit()
+        if 'changeWallpaper' in argsDict and argsDict['changeWallpaper']:
+            self._changeWallpaper()       
+        if 'removeSource' in argsDict:
+            self._removeSource(argsDict['removeSource'])
+        if 'addSource' in argsDict:
+            self._addSource(argsDict['addSource'])
+        if 'setRefreshTimeout' in argsDict:
+            self._setRefreshTimeout(argsDict['setRefreshTimeout'])
+            
 
 def main():
     app = MainApp()

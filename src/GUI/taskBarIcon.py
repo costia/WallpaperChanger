@@ -16,13 +16,13 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
     # called by wx
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        createMenuItem(menu, 'Change now',  lambda x: self.wxApp.changeWallpaper())
-        createMenuItem(menu, 'Exit',  lambda x: self.wxApp.handleExit())
+        createMenuItem(menu, 'Change now',  lambda x: self.wxApp.notifyMain({'changeWallpaper':True}))
+        createMenuItem(menu, 'Exit',  lambda x: self.wxApp.notifyMain({'handleExit':True}))
         return menu
     
     #
     # called by App
     #
-    def notifyGUI(self,statusDict):
-        if 'status' in statusDict:
-            self.SetIcon(self.icon, statusDict['status'])
+    def notifyGUI(self,argsDict):
+        if 'status' in argsDict:
+            self.SetIcon(self.icon, argsDict['status'])

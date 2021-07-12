@@ -31,31 +31,19 @@ class WallpaperChangerGUI(wx.App):
     #
     # called from main
     #
-    def notifyGUI(self,statusDict):
-        if 'exitGUI' in statusDict and statusDict['exitGUI']:
+    def notifyGUI(self,argsDict):
+        if 'exitGUI' in argsDict and argsDict['exitGUI']:
             self._exitGUI()
         else:
-            self.frame.notifyGUI(statusDict)
-            self.taskbar.notifyGUI(statusDict)
+            self.frame.notifyGUI(argsDict)
+            self.taskbar.notifyGUI(argsDict)
     
     #
     # main app callbacks
     #
+    def notifyMain(self,argsDict):
+        self.mainApp.notifyMain(argsDict)
 
-    def handleExit(self):
-        self.mainApp.handleExit()
-
-    def changeWallpaper(self):
-        self.mainApp.changeWallpaper()
-    
-    def removeSource(self,index):
-        self.mainApp.removeSource(index)
-
-    def addSource(self,sourceDict):
-        self.mainApp.addSource(sourceDict)
-    
-    def setRefreshTimeout(self,timeout):
-        self.mainApp.setRefreshTimeout(timeout)
     
     
     

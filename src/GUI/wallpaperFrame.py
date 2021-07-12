@@ -30,10 +30,10 @@ class WallpaperFrame(wx.Frame):
 
         self.popupmenu = wx.Menu()
         createMenuItem(self.popupmenu, 'Minimize',  lambda x: self.wxApp.toggleShow())
-        createMenuItem(self.popupmenu, 'Exit',  lambda x: self.wxApp.handleExit())
+        createMenuItem(self.popupmenu, 'Exit',  lambda x: self.wxApp.notifyMain({'handleExit':True}))
         self.Bind(wx.EVT_CONTEXT_MENU, self._onShowPopup)
         
-        self.Bind(wx.EVT_CLOSE, lambda x: self.wxApp.handleExit())
+        self.Bind(wx.EVT_CLOSE, lambda x: self.wxApp.notifyMain({'handleExit':True}))
         self.Bind(wx.EVT_ICONIZE, self._onIconize)
 
         self.selectMainPanelBtn = wx.Button(self,-1,'Main',pos=(0,0),size=(self.windowWidth/2+5,30))
@@ -42,7 +42,7 @@ class WallpaperFrame(wx.Frame):
         self._buildMainPanel(40)
         self._buildHistoryPanel(40)
 
-        self.changeNowButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.changeWallpaper())
+        self.changeNowButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.notifyMain({'changeWallpaper':True}))
 
         self.selectMainPanelBtn.Bind(wx.EVT_BUTTON, self._showMainPanel)
         self.selectHistoryPanelBtn.Bind(wx.EVT_BUTTON, self._showHistoryPanel)
@@ -170,8 +170,7 @@ class WallpaperFrame(wx.Frame):
     def _removeSource(self,event):
         selectedSourceID = self.sourcesListbox.GetSelection()
         if selectedSourceID>=0:
-            self.wxApp.removeSource(selectedSourceID)
-
+            self.wxApp.notifyMain({'removeSource':selectedSourceID})
 
     def _addSource(self,event):
         sourceType = self.sourceTypeSelect.GetStringSelection()
@@ -181,13 +180,12 @@ class WallpaperFrame(wx.Frame):
                 'type':sourceType,
                 'config':sourceConfig
             }
-            self.wxApp.addSource(sourceDict)
-
+            self.wxApp.notifyMain({'addSource':sourceDict})
     
     def _onTimeSelectChange(self,event):
         selected = self.timeSelect.GetValue()
         selectedPeriod = self.timeSelections[selected]
-        self.wxApp.setRefreshTimeout(selectedPeriod)
+        self.wxApp.notifyMain({'setRefreshTimeout':selectedPeriod})
         self.wallpaperRefreshTimeout = selectedPeriod
         self.log.info(f'GUI_WallpaperFrame: wallpaper refresh time changed to {selectedPeriod}')
 
@@ -205,7 +203,7 @@ class WallpaperFrame(wx.Frame):
                 ind +=1
             currentSelection = timesInMinutes[ind]
         if self.wallpaperRefreshTimeout != currentSelection:
-            self.wxApp.setRefreshTimeout(currentSelection)
+            wx.CallAfter(self.wxApp.notifyMain,{'setRefreshTimeout':currentSelection})
             self.wallpaperRefreshTimeout = currentSelection
         selectedItem = 0
         for x in self.timeSelections:
@@ -219,22 +217,22 @@ class WallpaperFrame(wx.Frame):
     # called by App
     #
 
-    def notifyGUI(self,statusDict):
-        if 'status' in statusDict:
-            self.labelStatus.SetValue(statusDict['status'])
+    def notifyGUI(self,argsDict):
+        if 'status' in argsDict:
+            self.labelStatus.SetValue(argsDict['status'])
             self.labelStatus.Update()
-        if 'blockWallpaperChange' in statusDict:
-            if statusDict['blockWallpaperChange']:
+        if 'blockWallpaperChange' in argsDict:
+            if argsDict['blockWallpaperChange']:
                 self.changeNowButton.Disable()
             else:
                 self.changeNowButton.Enable()
-        if 'updateHistory' in statusDict and statusDict['updateHistory']:      
+        if 'updateHistory' in argsDict and argsDict['updateHistory']:      
             self._updateHistoryList()
-        if 'imageSources' in statusDict:
-            self.imageSources = statusDict['imageSources']
+        if 'imageSources' in argsDict:
+            self.imageSources = argsDict['imageSources']
             self._updateSourcesList()
-        if 'lockSourceEdit' in statusDict:
-            if statusDict['lockSourceEdit']:
+        if 'lockSourceEdit' in argsDict:
+            if argsDict['lockSourceEdit']:
                 self.sourcesEditLocked = True
             else:
                 self.sourcesEditLocked = False
