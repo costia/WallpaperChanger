@@ -17,6 +17,7 @@ class WallpaperChangerGUI(wx.App):
             self.frame.Show(True)
             if self.frame.IsIconized():
                 self.frame.Iconize(False)
+            self.frame.Raise()
 
     #
     # called from main
