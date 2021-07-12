@@ -76,8 +76,9 @@ class WallpaperFrame(wx.Frame):
     def _updateHistoryList(self):
         names,links = self.db.getLatest(self.historyLength)
         self.historySources = links
-        self.historListbox.SetItems(names)
-        self.historListbox.SetSelection(0)
+        if len(names)>0:
+            self.historListbox.SetItems(names)
+            self.historListbox.SetSelection(0)
 
     def _buildHistoryPanel(self,nextY):
         startX = 5
