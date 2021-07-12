@@ -10,6 +10,15 @@ class WallpaperChangerGUI(wx.App):
         self.frame = WallpaperFrame(self,mainApp.config)
         self.frame.Show(True)
     
+    def _exitGUI(self):
+        self.taskbar.RemoveIcon()
+        self.taskbar.Destroy()
+        self.frame.Destroy()
+        wx.CallAfter(self.Destroy)
+
+    #
+    # called from frame or taskbar icon
+    #
     def toggleShow(self):
         if self.frame.IsShown():
             self.frame.Show(False)
@@ -22,16 +31,12 @@ class WallpaperChangerGUI(wx.App):
     #
     # called from main
     #
-
-    def exitGUI(self):
-        self.taskbar.RemoveIcon()
-        self.taskbar.Destroy()
-        self.frame.Destroy()
-        wx.CallAfter(self.Destroy)
-
     def setStatus(self,statusDict):
-        self.frame.setStatus(statusDict)
-        self.taskbar.setStatus(statusDict)
+        if 'exitGUI' in statusDict and statusDict['exitGUI']:
+            self._exitGUI()
+        else:
+            self.frame.setStatus(statusDict)
+            self.taskbar.setStatus(statusDict)
     
     #
     # main app callbacks

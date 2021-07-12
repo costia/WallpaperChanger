@@ -38,7 +38,7 @@ class ChangeWallpaperThread(threading.Thread):
         image = None
         retries = 0
         while not image:
-            if len(self.imageSources)==0:
+            if not self.imageSources or len(self.imageSources)==0:
                 self.log.error('changeWallpaper: no image sources found')
                 self.setStatus({'status':f'No image sources found'})
                 break
@@ -64,7 +64,9 @@ class ChangeWallpaperThread(threading.Thread):
             if retries>self.failRetries:
                 self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockWallpaperChange':False})
                 break
-            time.sleep(self.failWait)
+            self.stopEvent.wait(self.failWait)
+            if self.stopEvent.is_set():
+                break
         
         if image:
             setWallpaper(image)
@@ -82,9 +84,11 @@ class ChangeWallpaperThread(threading.Thread):
 
     def run(self):
         while not self.stopEvent.is_set():
-            while not self.imageSources:
+            while not self.imageSources :
                 self.log.info('ChangeWallpaperThread: waiting for sources to populate')
-                time.sleep(1)
+                self.stopEvent.wait(1)
+                if self.stopEvent.is_set():
+                    break
             self._changeWallpaper()
             self.minutesPassed=0
             while self.minutesPassed<self.changePeriod  and not self.interruptWaitEvent.is_set():
