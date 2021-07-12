@@ -59,7 +59,7 @@ class RedditPseudoRandomCacheThread(threading.Thread):
         aggregatedResponse = {x['data']['id']:x for x in aggregatedResponse}
         aggregatedResponse = list(aggregatedResponse.values())
         self.imageSource.pseudoRandomCache = aggregatedResponse
-        self.log.info(f'RedditPseudoRandomCacheThread: finished {self.imageSource.getName()}')
+        self.log.info(f'RedditPseudoRandomCacheThread: finished {self.imageSource.getName()} - collected {len(aggregatedResponse)} entries')
 
 
 class RedditImageSource:
