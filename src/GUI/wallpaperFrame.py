@@ -149,7 +149,8 @@ class WallpaperFrame(wx.Frame):
     def _updateSourcesList(self):
         sourcesListStrings = [ x.getTypeName()+':'+x.getName() for x in self.imageSources]
         self.sourcesListbox.SetItems(sourcesListStrings)
-        self.sourcesListbox.SetSelection(0)
+        if len(sourcesListStrings)>0:
+            self.sourcesListbox.SetSelection(0)
 
     def _removeSource(self,event):
         selectedSourceID = self.sourcesListbox.GetSelection()
@@ -222,6 +223,13 @@ class WallpaperFrame(wx.Frame):
         if 'imageSources' in statusDict:
             self.imageSources = statusDict['imageSources']
             self._updateSourcesList()
+        if 'lockSourceEdit' in statusDict:
+            if statusDict['lockSourceEdit']:
+                self.sourceAddButton.Disable()
+                self.sourceRemovButton.Disable()
+            else:
+                self.sourceAddButton.Enable()
+                self.sourceRemovButton.Enable()
 
 
     #

@@ -50,6 +50,7 @@ class MainApp:
     
     def resetSources(self):
         self.log.info('MainApp: started resetSources thread')
+        self.GUI.setStatus({'lockSourceEdit':True})
         resetThread = threading.Thread(target = self._resetSources)
         resetThread.start()
     
@@ -69,7 +70,7 @@ class MainApp:
                 newSources.append(sourceInstance)
         self.imageSources = newSources
         self.wallpaperReplaceThread.setSources(self.imageSources)
-        wx.CallAfter(self.GUI.setStatus,{'imageSources':self.imageSources})
+        wx.CallAfter(self.GUI.setStatus,{'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: resetSources thread done')
         
     def configChanged(self):
