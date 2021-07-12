@@ -53,6 +53,8 @@ class WallpaperFrame(wx.Frame):
         self.sourceConfig.Bind(wx.EVT_TEXT_ENTER,self._addSource)
         self.sourceRemovButton.Bind(wx.EVT_BUTTON,self._removeSource)
 
+        self.sourcesListbox.Bind(wx.EVT_LISTBOX,lambda x: self._sourceEditStatusChanged())
+
         self.baseFont = self.selectMainPanelBtn.GetFont()
         self.selectMainPanelBtn.SetFont(self.selectMainPanelBtn.GetFont().Bold())
         self.SetSize(size = (self.windowWidth+25,self.windowHeight))
@@ -60,6 +62,17 @@ class WallpaperFrame(wx.Frame):
     def _onIconize(self,event):
         if event.IsIconized():
             self.wxApp.toggleShow()
+    
+    def _sourceEditStatusChanged(self):
+        if self.sourcesListbox.GetSelection()>=0 and not self.sourcesEditLocked:
+            self.sourceRemovButton.Enable()
+        else:
+            self.sourceRemovButton.Disable()
+
+        if self.sourcesEditLocked:
+            self.sourceAddButton.Disable()
+        else:
+            self.sourceAddButton.Enable()
 
     def _showHistoryPanel(self,event):
         self.historyPanel.Show(True)
@@ -135,6 +148,10 @@ class WallpaperFrame(wx.Frame):
         nextY += 100
         self.sourceRemovButton = wx.Button(self.mainPanel,-1,'Remove source',pos=(startX,nextY),size=(self.windowWidth,20))
         nextY += 30
+
+        self.sourceAddButton.Disable()
+        self.sourceRemovButton.Disable()
+        self.sourcesEditLocked = True
 
         nextY += 20
         self.minimizeButton = wx.Button(self.mainPanel,-1,'Minimize to tray',pos=(startX,nextY),size=(self.windowWidth,30))
@@ -218,8 +235,7 @@ class WallpaperFrame(wx.Frame):
             self._updateSourcesList()
         if 'lockSourceEdit' in statusDict:
             if statusDict['lockSourceEdit']:
-                self.sourceAddButton.Disable()
-                self.sourceRemovButton.Disable()
+                self.sourcesEditLocked = True
             else:
-                self.sourceAddButton.Enable()
-                self.sourceRemovButton.Enable()
+                self.sourcesEditLocked = False
+            self._sourceEditStatusChanged()
