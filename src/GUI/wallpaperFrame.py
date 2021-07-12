@@ -149,17 +149,11 @@ class WallpaperFrame(wx.Frame):
     def _updateSourcesList(self):
         sourcesListStrings = [ x.getTypeName()+':'+x.getName() for x in self.imageSources]
         self.sourcesListbox.SetItems(sourcesListStrings)
-        if len(sourcesListStrings)>0:
-            self.sourcesListbox.SetSelection(0)
 
     def _removeSource(self,event):
         selectedSourceID = self.sourcesListbox.GetSelection()
-        newList = copy.deepcopy(self.config['sources'])
-        del newList[selectedSourceID]
-
-        self.config['sources']=newList
-        self.configChanged()
-        self.resetSources()
+        if selectedSourceID>=0:
+            self.wxApp.removeSource(selectedSourceID)
 
 
     def _addSource(self,event):
@@ -170,11 +164,8 @@ class WallpaperFrame(wx.Frame):
                 'type':sourceType,
                 'config':sourceConfig
             }
-            self.config['sources'].append(sourceDict)
-            self._updateSourcesList()
-            
-            self.configChanged()
-            self.resetSources()
+            self.wxApp.addSource(sourceDict)
+
     
     def _onTimeSelectChange(self,event):
         selected = self.timeSelect.GetValue()
@@ -213,8 +204,8 @@ class WallpaperFrame(wx.Frame):
         if 'status' in statusDict:
             self.labelStatus.SetValue(statusDict['status'])
             self.labelStatus.Update()
-        if 'blockChange' in statusDict:
-            if statusDict['blockChange']:
+        if 'blockWallpaperChange' in statusDict:
+            if statusDict['blockWallpaperChange']:
                 self.changeNowButton.Disable()
             else:
                 self.changeNowButton.Enable()
@@ -230,14 +221,3 @@ class WallpaperFrame(wx.Frame):
             else:
                 self.sourceAddButton.Enable()
                 self.sourceRemovButton.Enable()
-
-
-    #
-    # App callbacks
-    #
-
-    def resetSources(self):
-        self.wxApp.resetSources()
-
-    def configChanged(self):
-        self.wxApp.configChanged()

@@ -37,16 +37,17 @@ class WallpaperChangerGUI(wx.App):
     # main app callbacks
     #
 
-    def configChanged(self):
-        self.mainApp.configChanged()
-
     def handleExit(self):
         self.mainApp.handleExit()
 
     def changeWallpaper(self):
         self.mainApp.changeWallpaper()
     
-    def resetSources(self):
-        self.mainApp.resetSources()
+    def removeSource(self,index):
+        self.mainApp.removeSource(index)
+
+    def addSource(self,sourceDict):
+        self.mainApp.addSource(sourceDict)
+    
     
     

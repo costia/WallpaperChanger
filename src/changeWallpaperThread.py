@@ -29,7 +29,7 @@ class ChangeWallpaperThread(threading.Thread):
         self.interruptWaitEvent.set()
 
     def _changeWallpaper(self):
-        self.setStatus({'status':'Changing wallpaper','blockChange':True})
+        self.setStatus({'status':'Changing wallpaper','blockWallpaperChange':True})
         image = None
         retries = 0
         while not image:
@@ -57,13 +57,13 @@ class ChangeWallpaperThread(threading.Thread):
             
             retries +=1
             if retries>self.config['failRetries']:
-                self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockChange':False})
+                self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted','blockWallpaperChange':False})
                 break
             time.sleep(self.config['failWait'])
         
         if image:
             setWallpaper(image)
-            self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}', 'blockChange':False})
+            self.setStatus({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}', 'blockWallpaperChange':False})
             dbEntry={
                 'sourceType':selectedSource.getTypeName(),
                 'sourceName':selectedSource.getName(),

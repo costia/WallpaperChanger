@@ -47,7 +47,51 @@ class MainApp:
 
     def setStatus(self,statusDict={}):
         self.GUI.setStatus(statusDict)
+
+    def removeSource(self,index):
+        self.log.info(f'MainApp: removed source index {index}')
+        self.GUI.setStatus({'lockSourceEdit':True})
+        newSourceList=copy.copy(self.imageSources)
+        removedSource = newSourceList[index]
+        del newSourceList[index]
+        newList = copy.deepcopy(self.config['sources'])
+        del newList[index]
+
+        self.config['sources']=newList
+        self.imageSources = newSourceList
+        self.configChanged()
+        self.wallpaperReplaceThread.setSources(self.imageSources)
+        wx.CallAfter(self.GUI.setStatus,{'imageSources':self.imageSources,'lockSourceEdit':False})
+        self.log.info(f'MainApp: removed source {removedSource.getTypeName()}:{removedSource.getName()}')
+        
+    def addSource(self,sourceDict):
+        configString = str(sourceDict['config'])
+        sourceType = sourceDict['type']
+        self.log.info(f'MainApp: adding source {sourceType}:{configString}')
+        self.GUI.setStatus({'lockSourceEdit':True})
+        addThread = threading.Thread(target = self._addSource,args=(sourceDict,))
+        addThread.start()
     
+    def _addSource(self,sourceDict):
+        newSources = copy.copy(self.imageSources)
+        redditArgs = {
+                'type':sourceDict['type'],
+                'config':sourceDict['config'],
+                'width':self.width,
+                'height':self.height,
+                'aspectRatioMargin':self.config['aspectRatioMargin']
+            }
+        redditArgs = copy.deepcopy(redditArgs)
+        sourceInstance = ImageSource(redditArgs)
+        if sourceInstance:
+            newSources.append(sourceInstance)
+            self.config['sources'].append(sourceDict)
+            self.imageSources = newSources
+            self.configChanged()
+            self.wallpaperReplaceThread.setSources(self.imageSources)
+            wx.CallAfter(self.GUI.setStatus,{'imageSources':self.imageSources,'lockSourceEdit':False})
+        self.log.info('MainApp: addSources thread done')
+
     def resetSources(self):
         self.log.info('MainApp: started resetSources thread')
         self.GUI.setStatus({'lockSourceEdit':True})
