@@ -34,7 +34,7 @@ class WallpaperFrame(wx.Frame):
         self.Bind(wx.EVT_CONTEXT_MENU, self._onShowPopup)
         
         self.Bind(wx.EVT_CLOSE, lambda x: self.wxApp.handleExit())
-        self.Bind(wx.EVT_ICONIZE, lambda x: self.wxApp.toggleShow())
+        self.Bind(wx.EVT_ICONIZE, self._onIconize)
 
         self.selectMainPanelBtn = wx.Button(self,-1,'Main',pos=(0,0),size=(self.windowWidth/2+5,30))
         self.selectHistoryPanelBtn = wx.Button(self,-1,'History',pos=(self.windowWidth/2+5,0),size=(self.windowWidth/2+10,30))
@@ -56,6 +56,10 @@ class WallpaperFrame(wx.Frame):
         self.baseFont = self.selectMainPanelBtn.GetFont()
         self.selectMainPanelBtn.SetFont(self.selectMainPanelBtn.GetFont().Bold())
         self.SetSize(size = (self.windowWidth+25,self.windowHeight))
+
+    def _onIconize(self,event):
+        if event.IsIconized():
+            self.wxApp.toggleShow()
 
     def _showHistoryPanel(self,event):
         self.historyPanel.Show(True)

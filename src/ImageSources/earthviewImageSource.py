@@ -10,7 +10,7 @@ class EarthviewImageSource:
     def __init__(self,argsDict):
         self.log = logging.getLogger('WallpaperChanger')
         response = requests.get('https://earthview.withgoogle.com/')
-        htmldata = BeautifulSoup(response.content.decode())
+        htmldata = BeautifulSoup(response.content.decode(),features="html.parser")
         firstID = json.loads(htmldata.find('body')['data-photo'])
         self.nextId = firstID['nextSlug']
         self.tempDir = Resources['TEMP_DIR']
