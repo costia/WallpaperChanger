@@ -69,7 +69,7 @@ class RedditImageSource:
         self.width = argsDict['width']
         self.height = argsDict['height']
         self.ARmargin = argsDict['aspectRatioMargin']
-        self.minMP = self.width*self.height/2
+        self.minMP = self.width*self.height*(argsDict['minResolutionRatio']**2)
         self.requiredAR = self.width/self.height
 
         self.tempDir = Resources['TEMP_DIR']

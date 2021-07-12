@@ -13,3 +13,4 @@ changePeriod: 10
 failRetries: 10
 failWait: 1
 aspectRatioMargin: 0.3
+minResolutionRatio: 0.7

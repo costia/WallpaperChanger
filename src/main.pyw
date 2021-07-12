@@ -106,7 +106,8 @@ class MainApp:
                 'config':source['config'],
                 'width':self.width,
                 'height':self.height,
-                'aspectRatioMargin':self.config['aspectRatioMargin']
+                'aspectRatioMargin':self.config['aspectRatioMargin'],
+                'minResolutionRatio':self.config['minResolutionRatio']
             }
             redditArgs = copy.deepcopy(redditArgs)
             sourceInstance = ImageSource(redditArgs)
