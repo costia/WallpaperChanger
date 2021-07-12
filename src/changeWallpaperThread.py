@@ -34,8 +34,7 @@ class ChangeWallpaperThread(threading.Thread):
         self.interruptWaitEvent.set()
         self.join()
     
-    def _changeWallpaper(self):
-        self.notifyGUI({'status':'Changing wallpaper','blockWallpaperChange':True})
+    def _getImage(self):
         image = None
         retries = 0
         while not image:
@@ -50,7 +49,10 @@ class ChangeWallpaperThread(threading.Thread):
                 retDict = selectedSource.getImage()
             except:
                 retDict = None
+            
             if retDict:
+                retDict['selectedSourceType'] = selectedSource.getTypeName()
+                retDict['selectedSourceName'] = selectedSource.getName()
                 image = retDict['image']
                 metaName = retDict['metaName']
                 dup = self.db.checkDuplicate(image)
@@ -68,15 +70,32 @@ class ChangeWallpaperThread(threading.Thread):
             self.stopEvent.wait(self.failWait)
             if self.stopEvent.is_set():
                 break
+        return retDict
+
+    def _changeWallpaper(self):
+        self.notifyGUI({'status':'Changing wallpaper','blockWallpaperChange':True})
         
-        if image:
-            setWallpaper(image)
-            self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: {metaName}'})
+        imageDict = self._getImage()
+        
+        if imageDict:
+            selectedSourceType = imageDict['selectedSourceType']
+            selectedSourceName = imageDict['selectedSourceName']
+            metaName = imageDict['metaName']
+            image = imageDict['image']
+            imageSource = imageDict['imageSource']
+
+            ret = setWallpaper(image)
+            if ret:
+                self.notifyGUI({'status':f'{selectedSourceType}:{selectedSourceName}: {metaName}'})
+            else:
+                self.notifyGUI({'status':f'Failed applying {selectedSourceType}:{selectedSourceName}: {metaName}'})
+                self.log.error(f'ChangeWallpaperThread: Failed applying {selectedSourceType}:{selectedSourceName}: {image}')
+            
             dbEntry={
-                'sourceType':selectedSource.getTypeName(),
-                'sourceName':selectedSource.getName(),
+                'sourceType':selectedSourceType,
+                'sourceName':selectedSourceName,
                 'imageName': metaName,
-                'imageSource':retDict['imageSource'],
+                'imageSource':imageSource,
                 'image':image
             }
             self.db.addEntry(dbEntry)
