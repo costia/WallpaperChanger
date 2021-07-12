@@ -14,10 +14,9 @@ class RedditPseudoRandomCacheThread(threading.Thread):
     def __init__(self,imageSource):
         super(RedditPseudoRandomCacheThread, self).__init__()
         self.imageSource = imageSource
-        self.subreddit = imageSource.subreddit
         self.log = logging.getLogger('WallpaperChanger')
         self.tokenEndpoint = 'https://www.reddit.com/api/v1/access_token'
-        self.APIendpoint = f'https://oauth.reddit.com/r/{self.subreddit}/'
+        self.APIendpoint = f'https://oauth.reddit.com/r/{imageSource.subreddit}/'
         self.headerData = 'QmFzaWMgT1ROS04yWnNiRGhJTTB0c1NXWk9lVVJoYUhadWR6bz0='
         self.userAgent = str(random.randint(0,INT64_MAX))
     
@@ -60,7 +59,7 @@ class RedditPseudoRandomCacheThread(threading.Thread):
         aggregatedResponse = {x['data']['id']:x for x in aggregatedResponse}
         aggregatedResponse = list(aggregatedResponse.values())
         self.imageSource.pseudoRandomCache = aggregatedResponse
-        self.log.info(f'RedditPseudoRandomCacheThread: finished {self.subreddit}')
+        self.log.info(f'RedditPseudoRandomCacheThread: finished {self.imageSource.getName()}')
 
 
 class RedditImageSource:
