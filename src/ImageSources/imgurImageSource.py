@@ -22,7 +22,7 @@ class ImgurImageSource:
 
         self.tempDir = Resources['TEMP_DIR']
 
-        self.headerData = 'Q2xpZW50LUlEIDcxODIwYTVjODYxMzJmZQ=='
+        self.headerData = 'Q2xpZW50LUlEIDc0Mzg3MDdjODcwNDI1Yg=='
         self.APIendpoint = f'https://api.imgur.com/3/gallery/r/{self.subreddit}/'
         self.userAgent = str(random.randint(0,INT64_MAX))
 
