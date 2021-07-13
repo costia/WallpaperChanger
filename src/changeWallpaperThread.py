@@ -35,14 +35,14 @@ class ChangeWallpaperThread(threading.Thread):
         self.join()
     
     def _getImage(self):
-        image = None
+        if not self.imageSources or len(self.imageSources)==0:
+            self.log.error('changeWallpaper: no image sources found')
+            self.notifyGUI({'status':f'No image sources found'})
+            return None
+        
+        retDict = None
         retries = 0
-        while not image:
-            if not self.imageSources or len(self.imageSources)==0:
-                self.log.error('changeWallpaper: no image sources found')
-                self.notifyGUI({'status':f'No image sources found'})
-                break
-
+        while (not retDict) and (retries<=self.failRetries) and (not self.stopEvent.is_set()):
             selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
             self.log.info(f'changeWallpaper: selected source {selectedSource.getName()}')
             try:
@@ -50,26 +50,26 @@ class ChangeWallpaperThread(threading.Thread):
             except:
                 retDict = None
             
-            if retDict:
-                retDict['selectedSourceType'] = selectedSource.getTypeName()
-                retDict['selectedSourceName'] = selectedSource.getName()
-                image = retDict['image']
-                metaName = retDict['metaName']
-                dup = self.db.checkDuplicate(image)
-                if dup:
-                    self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                    self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
-                    image = None
-            else:
+            if not retDict:
+                retries +=1
                 self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying {retries}'})
-            
-            retries +=1
-            if retries>self.failRetries:
-                self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retries exhausted'})
-                break
-            self.stopEvent.wait(self.failWait)
-            if self.stopEvent.is_set():
-                break
+                self.stopEvent.wait(self.failWait)
+                continue
+
+            dup = self.db.checkDuplicate(retDict['image'])
+            if dup:
+                metaName = retDict['metaName']
+                self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
+                retDict = None
+                continue
+
+            retDict['selectedSourceType'] = selectedSource.getTypeName()
+            retDict['selectedSourceName'] = selectedSource.getName()
+
+        if not retDict:
+            self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED'})
+
         return retDict
 
     def _changeWallpaper(self):
