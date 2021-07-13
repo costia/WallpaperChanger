@@ -26,6 +26,7 @@ class EarthviewImageSource:
             htmldata = BeautifulSoup(response.content.decode(),features="html.parser")
             firstID = json.loads(htmldata.find('body')['data-photo'])
             self.nextId = firstID['nextSlug']
+            self.log.info(f'EarthviewImageSource: reset image chain id')
 
         response = requests.get(f'https://earthview.withgoogle.com/_api/{self.nextId}.json')
         postData = json.loads(response.content)
