@@ -80,6 +80,7 @@ class ChangeWallpaperThread(threading.Thread):
             if not retDict:
                 retries +=1
                 self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying {retries}'})
+                self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} failed to get image')
                 self.stopEvent.wait(self.failWait)
                 continue
             
