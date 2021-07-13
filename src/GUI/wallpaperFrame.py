@@ -20,8 +20,13 @@ class WallpaperFrame(wx.Frame):
         self.windowWidth = 300
         self.windowHeight = 490+30
         self.panelHeight = 490
-        self.timeSelections = {'5min':5,'10min':10,'30min':30,'1h':60,'4h':60*4,'12h':60*12,'24h':60*24}
-
+        self.timeSelections = [{'name':'5min','value':5},
+                                {'name':'10min','value':10},
+                                {'name':'1h','value':60},
+                                {'name':'4h','value':60*4},
+                                {'name':'12h','value':60*12},
+                                {'name':'24h','value':60*24}]
+        
         self.sourceTypes = getSourceTypes()
         self.wallpaperRefreshTimeout = config['changePeriod']
         self.wxApp = wxApp
@@ -127,7 +132,7 @@ class WallpaperFrame(wx.Frame):
         self.labelRefresh = wx.StaticText(self.mainPanel,label = "Wallpaper refresh delay:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
         nextY += 20
 
-        self.timeSelect = wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x for x in self.timeSelections])
+        self.timeSelect = wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x['name'] for x in self.timeSelections])
         self.timeSelect.SetSelection(self._getCurrentTimeSelectID())
         nextY += 30
         self.changeNowButton = wx.Button(self.mainPanel,-1,'Change now',pos=(startX,nextY),size=(self.windowWidth,20))
@@ -183,8 +188,8 @@ class WallpaperFrame(wx.Frame):
             self.wxApp.notifyMain({'addSource':sourceDict})
     
     def _onTimeSelectChange(self,event):
-        selected = self.timeSelect.GetValue()
-        selectedPeriod = self.timeSelections[selected]
+        selected = self.timeSelect.GetSelection()
+        selectedPeriod = self.timeSelections[selected]['value']
         self.wxApp.notifyMain({'setRefreshTimeout':selectedPeriod})
         self.wallpaperRefreshTimeout = selectedPeriod
         self.log.info(f'GUI_WallpaperFrame: wallpaper refresh time changed to {selectedPeriod}')
@@ -194,22 +199,19 @@ class WallpaperFrame(wx.Frame):
 
     def _getCurrentTimeSelectID(self):
         currentSelection=self.wallpaperRefreshTimeout
-        timesInMinutes = [self.timeSelections[x] for x in self.timeSelections]
-        if currentSelection>timesInMinutes[-1]:
-            currentSelection=timesInMinutes[-1]
-        else:
-            ind = 0
-            while timesInMinutes[ind]<currentSelection:
-                ind +=1
-            currentSelection = timesInMinutes[ind]
-        if self.wallpaperRefreshTimeout != currentSelection:
+
+        selectedItem = -1
+        for ind,x in enumerate(self.timeSelections):
+            if x['value']==currentSelection:
+                selectedItem = ind
+                break
+        
+        if selectedItem<0:
+            selectedItem=1
+            currentSelection = self.timeSelections[selectedItem]['value']
             wx.CallAfter(self.wxApp.notifyMain,{'setRefreshTimeout':currentSelection})
             self.wallpaperRefreshTimeout = currentSelection
-        selectedItem = 0
-        for x in self.timeSelections:
-            if self.timeSelections[x]==currentSelection:
-                break
-            selectedItem +=1
+
         return selectedItem
     
     
