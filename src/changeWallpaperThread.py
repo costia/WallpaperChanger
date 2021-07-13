@@ -35,6 +35,8 @@ class ChangeWallpaperThread(threading.Thread):
             self.changePeriod = argsDict['setRefreshTimeout']
         if 'changeWallpaper' in argsDict and argsDict['changeWallpaper']:
             self.interruptWaitEvent.set()
+        if 'setMinResolution' in argsDict:
+            self.minResolution = argsDict['setMinResolution']
     
     def _stopChangeThread(self):
         self.stopEvent.set()

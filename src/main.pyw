@@ -99,11 +99,6 @@ class MainApp:
         self.notifyGUI({'imageSources':self.imageSources,'lockSourceEdit':False})
         self.log.info('MainApp: resetSources thread done')
     
-    def _setRefreshTimeout(self,timeout):
-        self.config['changePeriod']=timeout
-        self.wallpaperReplaceThread.notifyChangeThread({'setRefreshTimeout':timeout})
-        self._saveConfig()
-
     def _saveConfig(self):
         configPath=Resources['CONFIG_YAML']
         with open(configPath,'wt') as f:
@@ -127,7 +122,13 @@ class MainApp:
         if 'addSource' in argsDict:
             self._addSource(argsDict['addSource'])
         if 'setRefreshTimeout' in argsDict:
-            self._setRefreshTimeout(argsDict['setRefreshTimeout'])
+            self.config['changePeriod']=argsDict['setRefreshTimeout']
+            self.wallpaperReplaceThread.notifyChangeThread({'setRefreshTimeout':argsDict['setRefreshTimeout']})
+            self._saveConfig()
+        if 'setMinResolution' in argsDict:
+            self.config['minResolution']=argsDict['setMinResolution']
+            self.wallpaperReplaceThread.notifyChangeThread({'setMinResolution':argsDict['setMinResolution']})
+            self._saveConfig()
             
 
 def main():

@@ -18,8 +18,8 @@ class WallpaperFrame(wx.Frame):
         self.db = WallpaperDatabase()
         
         self.windowWidth = 300
-        self.windowHeight = 490+30
-        self.panelHeight = 490
+        self.panelHeight = 520
+        self.windowHeight = self.panelHeight+30
         self.timeSelections = [{'name':'5min','value':5},
                                 {'name':'10min','value':10},
                                 {'name':'1h','value':60},
@@ -27,8 +27,16 @@ class WallpaperFrame(wx.Frame):
                                 {'name':'12h','value':60*12},
                                 {'name':'24h','value':60*24}]
         
+        self.minResolutionsSelections=[
+            {'name':'720p','value':[1280,720]},
+            {'name':'1080p','value':[1920,1080]},
+            {'name':'1440p','value':[2560,1440]},
+            {'name':'4K','value':[3840,2160]},
+        ]
+
         self.sourceTypes = getSourceTypes()
         self.wallpaperRefreshTimeout = config['changePeriod']
+        self.wallpaperMinResolution = config['minResolution']
         self.wxApp = wxApp
         self.log = logging.getLogger('WallpaperChanger')
         self.historyLength = 40
@@ -57,7 +65,7 @@ class WallpaperFrame(wx.Frame):
         self.sourceAddButton.Bind(wx.EVT_BUTTON, self._addSource)
         self.sourceConfig.Bind(wx.EVT_TEXT_ENTER,self._addSource)
         self.sourceRemovButton.Bind(wx.EVT_BUTTON,self._removeSource)
-
+        self.minResSelect.Bind(wx.EVT_COMBOBOX, self._onResolutionSelectChange)
         self.sourcesListbox.Bind(wx.EVT_LISTBOX,lambda x: self._sourceEditStatusChanged())
 
         self.baseFont = self.selectMainPanelBtn.GetFont()
@@ -131,7 +139,6 @@ class WallpaperFrame(wx.Frame):
 
         self.labelRefresh = wx.StaticText(self.mainPanel,label = "Wallpaper refresh delay:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
         nextY += 20
-
         self.timeSelect = wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x['name'] for x in self.timeSelections])
         self.timeSelect.SetSelection(self._getCurrentTimeSelectID())
         nextY += 30
@@ -141,7 +148,8 @@ class WallpaperFrame(wx.Frame):
         nextY += 20
         self.labelSources = wx.StaticText(self.mainPanel,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
         nextY += 20
-        self.sourceTypeSelect= wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=self.sourceTypes)
+        self.sourceTypeSelect= wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,
+            choices=self.sourceTypes)
         self.sourceTypeSelect.SetSelection(0)
         nextY += 25
         self.sourceConfig = wx.TextCtrl(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,20),style = wx.TE_PROCESS_ENTER)
@@ -152,15 +160,22 @@ class WallpaperFrame(wx.Frame):
         self.sourcesListbox = wx.ListBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,100))
         nextY += 100
         self.sourceRemovButton = wx.Button(self.mainPanel,-1,'Remove source',pos=(startX,nextY),size=(self.windowWidth,20))
-        nextY += 30
+        nextY += 50
 
         self.sourceAddButton.Disable()
         self.sourceRemovButton.Disable()
         self.sourcesEditLocked = True
 
+        self.labelResolution= wx.StaticText(self.mainPanel,label = "Minimal resolution:" ,pos=(startX,nextY+2),style = wx.ALIGN_LEFT) 
+        textSize = self.labelResolution.GetSize()[0] +10
+        self.minResSelect = wx.ComboBox(self.mainPanel,pos=(startX+textSize,nextY),size=(self.windowWidth-textSize,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,
+            choices=[x['name'] for x in self.minResolutionsSelections])
+        self.minResSelect.SetSelection(self._getCurrentMinResolutionSelectID())
+        nextY += 30
+
         nextY += 20
         self.minimizeButton = wx.Button(self.mainPanel,-1,'Minimize to tray',pos=(startX,nextY),size=(self.windowWidth,30))
-        nextY += 50
+        nextY += 35
 
         self.labelStatus = wx.TextCtrl(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,40),style = wx.TE_READONLY| wx.TE_MULTILINE| wx.TE_NO_VSCROLL ) 
         self.labelStatus.SetLabelText('Initializing...')
@@ -194,6 +209,13 @@ class WallpaperFrame(wx.Frame):
         self.wallpaperRefreshTimeout = selectedPeriod
         self.log.info(f'GUI_WallpaperFrame: wallpaper refresh time changed to {selectedPeriod}')
 
+    def _onResolutionSelectChange(self,event):
+        selected = self.minResSelect.GetSelection()
+        selectedResolution = self.minResolutionsSelections[selected]['value']
+        self.wxApp.notifyMain({'setMinResolution':selectedResolution})
+        self.wallpaperMinResolution = selectedResolution
+        self.log.info(f'GUI_WallpaperFrame: wallpaper min resolution changed to {str(selectedResolution)}')
+
     def _onShowPopup(self,event):
         self.PopupMenu(self.popupmenu,self.ScreenToClient(event.GetPosition()))
 
@@ -214,6 +236,24 @@ class WallpaperFrame(wx.Frame):
 
         return selectedItem
     
+    def _getCurrentMinResolutionSelectID(self):
+        currentSelection=self.wallpaperMinResolution
+
+        selectedItem = -1
+        for ind,x in enumerate(self.minResolutionsSelections):
+            if x['value'][0]==currentSelection[0] and x['value'][1]==currentSelection[1]:
+                selectedItem = ind
+                break
+        
+        if selectedItem<0:
+            selectedItem=0
+            currentSelection = self.minResolutionsSelections[selectedItem]['value']
+            wx.CallAfter(self.wxApp.notifyMain,{'setMinResolution':currentSelection})
+            self.wallpaperMinResolution = currentSelection
+
+        return selectedItem
+
+        
     
     #
     # called by App
