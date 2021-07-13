@@ -17,8 +17,8 @@ class WallpaperFrame(wx.Frame):
 
         self.db = WallpaperDatabase()
         
-        self.windowWidth = 300
-        self.panelHeight = 520
+        self.windowWidth = 290
+        self.panelHeight = 410
         self.windowHeight = self.panelHeight+30
         self.timeSelections = [{'name':'5min','value':5},
                                 {'name':'10min','value':10},
@@ -61,7 +61,6 @@ class WallpaperFrame(wx.Frame):
         self.selectHistoryPanelBtn.Bind(wx.EVT_BUTTON, self._showHistoryPanel)
 
         self.timeSelect.Bind(wx.EVT_COMBOBOX, self._onTimeSelectChange)
-        self.minimizeButton.Bind(wx.EVT_BUTTON, lambda x: self.wxApp.toggleShow())
         self.sourceAddButton.Bind(wx.EVT_BUTTON, self._addSource)
         self.sourceConfig.Bind(wx.EVT_TEXT_ENTER,self._addSource)
         self.sourceRemovButton.Bind(wx.EVT_BUTTON,self._removeSource)
@@ -137,35 +136,33 @@ class WallpaperFrame(wx.Frame):
         self.mainPanel.SetSize(size = (self.windowWidth+25,self.panelHeight))
         self.mainPanel.SetPosition((0,0))
 
-        self.labelRefresh = wx.StaticText(self.mainPanel,label = "Wallpaper refresh delay:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
-        nextY += 20
-        self.timeSelect = wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x['name'] for x in self.timeSelections])
+        self.labelRefresh = wx.StaticText(self.mainPanel,label = "Wallpaper refresh delay:" ,pos=(startX,nextY+2),style = wx.ALIGN_LEFT) 
+        textSize = self.labelRefresh.GetSize()[0] +10
+        self.timeSelect = wx.ComboBox(self.mainPanel,pos=(startX+textSize,nextY),size=(self.windowWidth-textSize,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,choices=[x['name'] for x in self.timeSelections])
         self.timeSelect.SetSelection(self._getCurrentTimeSelectID())
-        nextY += 30
-        self.changeNowButton = wx.Button(self.mainPanel,-1,'Change now',pos=(startX,nextY),size=(self.windowWidth,20))
-        nextY += 30
-
-        nextY += 20
-        self.labelSources = wx.StaticText(self.mainPanel,label = "Wallpaper sources:" ,pos=(startX,nextY),style = wx.ALIGN_LEFT) 
-        nextY += 20
-        self.sourceTypeSelect= wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,
-            choices=self.sourceTypes)
-        self.sourceTypeSelect.SetSelection(0)
-        nextY += 25
-        self.sourceConfig = wx.TextCtrl(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,20),style = wx.TE_PROCESS_ENTER)
-        nextY += 20
-        self.sourceAddButton = wx.Button(self.mainPanel,-1,'Add new source',pos=(startX,nextY),size=(self.windowWidth,20))
-        nextY += 30
-
-        self.sourcesListbox = wx.ListBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,100))
-        nextY += 100
-        self.sourceRemovButton = wx.Button(self.mainPanel,-1,'Remove source',pos=(startX,nextY),size=(self.windowWidth,20))
+        nextY += self.timeSelect.GetSize()[1]+3
+        self.changeNowButton = wx.Button(self.mainPanel,-1,'Change now',pos=(startX,nextY),size=(self.windowWidth,25))
         nextY += 50
 
+        self.labelSources = wx.StaticText(self.mainPanel,label = "Wallpaper sources:" ,pos=(startX,nextY+2),style = wx.ALIGN_LEFT) 
+        nextY += 20
+        self.sourcesListbox = wx.ListBox(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,100))
+        nextY += 105
+        textSize = self.labelSources.GetSize()[0] +10
+        self.sourceTypeSelect= wx.ComboBox(self.mainPanel,pos=(startX,nextY),size=(100,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,
+            choices=self.sourceTypes)
+        self.sourceTypeSelect.SetSelection(0)
+        self.sourceConfig = wx.TextCtrl(self.mainPanel,pos=(startX+100,nextY),size=(self.windowWidth-100,20),style = wx.TE_PROCESS_ENTER)
+        nextY += 20
+        self.sourceAddButton = wx.Button(self.mainPanel,-1,'Add new source',pos=(startX,nextY),size=(self.windowWidth/2,25))
+        self.sourceRemovButton = wx.Button(self.mainPanel,-1,'Remove source',pos=(startX+self.windowWidth/2,nextY),size=(self.windowWidth/2,25))
+        nextY += 30
         self.sourceAddButton.Disable()
         self.sourceRemovButton.Disable()
         self.sourcesEditLocked = True
+        
 
+        nextY += 20
         self.labelResolution= wx.StaticText(self.mainPanel,label = "Minimal resolution:" ,pos=(startX,nextY+2),style = wx.ALIGN_LEFT) 
         textSize = self.labelResolution.GetSize()[0] +10
         self.minResSelect = wx.ComboBox(self.mainPanel,pos=(startX+textSize,nextY),size=(self.windowWidth-textSize,30),style=wx.CB_DROPDOWN|wx.CB_READONLY,
@@ -174,8 +171,6 @@ class WallpaperFrame(wx.Frame):
         nextY += 30
 
         nextY += 20
-        self.minimizeButton = wx.Button(self.mainPanel,-1,'Minimize to tray',pos=(startX,nextY),size=(self.windowWidth,30))
-        nextY += 35
 
         self.labelStatus = wx.TextCtrl(self.mainPanel,pos=(startX,nextY),size=(self.windowWidth,40),style = wx.TE_READONLY| wx.TE_MULTILINE| wx.TE_NO_VSCROLL ) 
         self.labelStatus.SetLabelText('Initializing...')
