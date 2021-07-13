@@ -61,16 +61,16 @@ class WallpaperDatabase:
         db = sqlite3.connect(Resources['DB_FILE'])
         cursor = db.cursor()
 
-        sql = 'SELECT * FROM history WHERE imageSize=? AND date>?'
+        sql = 'SELECT imageSource FROM history WHERE imageSize=? AND date>?'
         cursor.execute(sql,(imageSize,time))
         res = cursor.fetchone()
         if res:
             imageMD5 = self._fileMD5(image)
-            sql = 'SELECT * FROM history WHERE imageMD5=? AND date>?'
+            sql = 'SELECT imageSource FROM history WHERE imageMD5=? AND date>?'
             cursor.execute(sql,(imageMD5,time))
             res = cursor.fetchone()
             if res:
-                ret=res[1]+':'+res[4]
+                ret=res[0]
         db.close()
         return ret
         

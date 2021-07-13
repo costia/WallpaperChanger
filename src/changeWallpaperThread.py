@@ -94,8 +94,9 @@ class ChangeWallpaperThread(threading.Thread):
 
             dup = self.db.checkDuplicate(retDict['image'],self.duplicateTimeout)
             if dup:
+                imageSource = retDict['imageSource']
                 self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
+                self.log.info(f'changeWallpaper: duplicate detected {imageSource}, {dup}')
                 retDict = None
                 continue
 
