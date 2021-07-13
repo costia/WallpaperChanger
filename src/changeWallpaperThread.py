@@ -66,12 +66,14 @@ class ChangeWallpaperThread(threading.Thread):
                 self.failedSourceID = selectedSourceID
             if retrysourceID:
                 selectedSourceID = retrysourceID % len(self.imageSources)
+                selectedSource = self.imageSources[selectedSourceID]
+                self.log.info(f'changeWallpaper: retrying previously failed {selectedSource.getTypeName()}:{selectedSource.getName()}')
                 retrysourceID = None
             else:  
                 selectedSourceID = random.randint(0,len(self.imageSources)-1)
-            selectedSource = self.imageSources[selectedSourceID]
-
-            self.log.info(f'changeWallpaper: selected source {selectedSource.getName()}')
+                selectedSource = self.imageSources[selectedSourceID]
+                self.log.info(f'changeWallpaper: selected random source {selectedSource.getTypeName()}:{selectedSource.getName()}')
+            
             try:
                 retDict = selectedSource.getImage()
             except:
