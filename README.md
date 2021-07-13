@@ -1,10 +1,10 @@
 Auto wallpaper changer, taking random images from multiple sources.
 
-![Wallpaper changer](https://i.imgur.com/ZUDQvnt.png, "Wallpaper changer")
+![Wallpaper changer](https://i.imgur.com/GI4jfTr.png, "Wallpaper changer")
 
 <br/>
 
-![History with copy source](https://i.imgur.com/Fe7WNAo.png, "History with copy source")
+![History with copy source](https://i.imgur.com/jxPomsV.png, "History with copy source")
 
 <br/>
 
