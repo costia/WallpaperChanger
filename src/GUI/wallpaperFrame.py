@@ -18,8 +18,8 @@ class WallpaperFrame(wx.Frame):
         self.db = WallpaperDatabase()
         
         self.windowWidth = 290
-        self.panelHeight = 410
-        self.windowHeight = self.panelHeight+30
+        self.panelHeight = 405
+        self.windowHeight = self.panelHeight
         self.timeSelections = [{'name':'5min','value':5},
                                 {'name':'10min','value':10},
                                 {'name':'1h','value':60},
@@ -50,7 +50,7 @@ class WallpaperFrame(wx.Frame):
         self.Bind(wx.EVT_ICONIZE, self._onIconize)
 
         self.selectMainPanelBtn = wx.Button(self,-1,'Main',pos=(0,0),size=(self.windowWidth/2+5,30))
-        self.selectHistoryPanelBtn = wx.Button(self,-1,'History',pos=(self.windowWidth/2+5,0),size=(self.windowWidth/2+10,30))
+        self.selectHistoryPanelBtn = wx.Button(self,-1,'History',pos=(self.windowWidth/2+5,0),size=(self.windowWidth/2+5,30))
         
         self._buildMainPanel(40)
         self._buildHistoryPanel(40)
@@ -69,7 +69,7 @@ class WallpaperFrame(wx.Frame):
 
         self.baseFont = self.selectMainPanelBtn.GetFont()
         self.selectMainPanelBtn.SetFont(self.selectMainPanelBtn.GetFont().Bold())
-        self.SetSize(size = (self.windowWidth+25,self.windowHeight))
+        self.SetClientSize(size = (self.windowWidth+10,self.windowHeight))
 
     def _onIconize(self,event):
         if event.IsIconized():
@@ -111,7 +111,7 @@ class WallpaperFrame(wx.Frame):
         self.historyPanel.SetSize(size = (self.windowWidth+25,self.panelHeight))
         self.historyPanel.SetPosition((0,0))
 
-        self.historListbox = wx.ListBox(self.historyPanel,pos=(startX,nextY),size=(self.windowWidth,self.panelHeight-50))
+        self.historListbox = wx.ListBox(self.historyPanel,pos=(startX,nextY),size=(self.windowWidth,self.panelHeight-40))
         self._updateHistoryList()
 
         self.popupmenuHistory = wx.Menu()
