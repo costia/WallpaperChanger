@@ -1,7 +1,6 @@
 import logging
 import yaml
 import shutil
-from win32api import GetSystemMetrics
 import copy
 import threading
 import wx
@@ -23,9 +22,6 @@ class MainApp:
         self.log.info(f'MainApp: started')
 
         registerAllTypes()
-
-        self.width = GetSystemMetrics(0)
-        self.height = GetSystemMetrics(1)
 
         for param in Resources:
             self.log.info(f'MainApp: {param}:{Resources[param]}')
@@ -74,14 +70,7 @@ class MainApp:
     
     def _addSource_thread(self,sourceDict):
         newSources = copy.copy(self.imageSources)
-        redditArgs = {
-                'type':sourceDict['type'],
-                'config':sourceDict['config'],
-                'width':self.width,
-                'height':self.height,
-                'aspectRatioMargin':self.config['aspectRatioMargin']
-            }
-        redditArgs = copy.deepcopy(redditArgs)
+        redditArgs = copy.deepcopy(sourceDict)
         sourceInstance = ImageSource(redditArgs)
         if sourceInstance:
             newSources.append(sourceInstance)
@@ -101,15 +90,7 @@ class MainApp:
     def _resetSources_thread(self):
         newSources = []
         for source in self.config['sources']:
-            redditArgs = {
-                'type':source['type'],
-                'config':source['config'],
-                'width':self.width,
-                'height':self.height,
-                'aspectRatioMargin':self.config['aspectRatioMargin'],
-                'minResolutionRatio':self.config['minResolutionRatio']
-            }
-            redditArgs = copy.deepcopy(redditArgs)
+            redditArgs = copy.deepcopy(source)
             sourceInstance = ImageSource(redditArgs)
             if sourceInstance:
                 newSources.append(sourceInstance)

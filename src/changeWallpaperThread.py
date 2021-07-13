@@ -1,7 +1,8 @@
 import threading
-import time 
+from win32api import GetSystemMetrics
 import random
 import logging
+from PIL import Image
 
 from osChangeWallpaper import setWallpaper
 from database import WallpaperDatabase
@@ -12,12 +13,18 @@ class ChangeWallpaperThread(threading.Thread):
         self.failRetries = config['failRetries']
         self.failWait = config['failWait']
         self.changePeriod = config['changePeriod']
+        self.minResolution = config['minResolution']
+        self.aspectRatioMargin = config['aspectRatioMargin']
         self.notifyGUI = notifyGUI
         self.imageSources = None
         self.stopEvent = threading.Event()
         self.interruptWaitEvent = threading.Event()
         self.db = WallpaperDatabase()
         self.log = logging.getLogger('WallpaperChanger')
+
+        screenWitdh = GetSystemMetrics(0)
+        screenHeight = GetSystemMetrics(1)
+        self.requiredAR = screenWitdh/screenHeight
 
     def notifyChangeThread(self,argsDict):
         if 'stop' in argsDict and argsDict['stop']:
@@ -55,10 +62,35 @@ class ChangeWallpaperThread(threading.Thread):
                 self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED, retrying {retries}'})
                 self.stopEvent.wait(self.failWait)
                 continue
+            
+            metaName = retDict['metaName']
+            image = retDict['image']
+
+            try:
+                im = Image.open(image)
+                imWidth = im.size[0]
+                imHeight = im.size[1]
+                currentAR = imWidth/imHeight
+                aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
+                if aspectRatioDiff>self.aspectRatioMargin:
+                    self.notifyGUI({'status':f'Bad aspect ratio {currentAR} {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                    self.log.error(f'changeWallpaper: {selectedSource.getName()} incompatible aspect ratio AR={currentAR} {metaName}')
+                    retDict = None
+                    continue
+
+                if imWidth<self.minResolution[0] or imHeight<self.minResolution[1]:
+                    self.notifyGUI({'status':f'Small image - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                    self.log.error(f'changeWallpaper: {selectedSource.getName()} small image {imWidth}x{imHeight} {metaName}')
+                    retDict = None
+                    continue
+            except:
+                self.notifyGUI({'status':f'failed to open image {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                self.log.error(f'changeWallpaper: {selectedSource.getName()} failed to open image {image}')
+                retDict = None
+                continue
 
             dup = self.db.checkDuplicate(retDict['image'])
             if dup:
-                metaName = retDict['metaName']
                 self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
                 self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')
                 retDict = None

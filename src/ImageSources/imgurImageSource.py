@@ -5,7 +5,6 @@ import base64
 import json
 import random
 import os
-from PIL import Image
 from wx.core import INT64_MAX
 
 from resources import Resources
@@ -14,15 +13,7 @@ class ImgurImageSource:
     def __init__(self,argsDict):
         self.log = logging.getLogger('WallpaperChanger')
         self.subreddit = argsDict['config']
-        self.width = argsDict['width']
-        self.height = argsDict['height']
-        self.ARmargin = argsDict['aspectRatioMargin']
-        self.minMP = self.width*self.height*(argsDict['minResolutionRatio']**2)
-        self.minMP = min(self.minMP,1920*1080)
-        self.requiredAR = self.width/self.height
-
         self.tempDir = Resources['TEMP_DIR']
-
         self.headerData = 'Q2xpZW50LUlEIDc0Mzg3MDdjODcwNDI1Yg=='
         self.APIendpoint = f'https://api.imgur.com/3/gallery/r/{self.subreddit}/'
         self.userAgent = str(random.randint(0,INT64_MAX))
@@ -55,24 +46,9 @@ class ImgurImageSource:
 
         self.log.info(f'ImgurImageSource: {self.getName()} fetched {permalink}')
 
-        im = Image.open(outFile)
-        imWidth = im.size[0]
-        imHeight = im.size[1]
-        currentAR = imWidth/imHeight
-        currentMP = imWidth*imHeight
-        aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
-        if aspectRatioDiff>self.ARmargin:
-            self.log.error(f'RedditImageSource: {self.getName()} incompatible aspect ratio AR={currentAR} {permalink}')
-            return None
-        if currentMP<self.minMP:
-            self.log.error(f'RedditImageSource: {self.getName()} small image {currentMP}MP {permalink}')
-            return None
-
         retData = {
             'image':outFile,
             'metaName':postData['title'],
             'imageSource':permalink
         }
         return retData
-
-        pass

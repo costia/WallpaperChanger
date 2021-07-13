@@ -66,15 +66,7 @@ class RedditImageSource:
     def __init__(self,argsDict):
         self.log = logging.getLogger('WallpaperChanger')
         self.subreddit = argsDict['config']
-        self.width = argsDict['width']
-        self.height = argsDict['height']
-        self.ARmargin = argsDict['aspectRatioMargin']
-        self.minMP = self.width*self.height*(argsDict['minResolutionRatio']**2)
-        self.minMP = min(self.minMP,1920*1080)
-        self.requiredAR = self.width/self.height
-
         self.tempDir = Resources['TEMP_DIR']
-
         self.tokenEndpoint = 'https://www.reddit.com/api/v1/access_token'
         self.APIendpoint = f'https://oauth.reddit.com/r/{self.subreddit}/'
         self.APIendpointRandom = self.APIendpoint+'random.json'
@@ -149,18 +141,7 @@ class RedditImageSource:
         if not 'post_hint' in postData or postData['post_hint']!='image':
             self.log.error(f'RedditImageSource: {self.getName()} unsupported post type {permalink}')
             return None
-        
-        imageData = postData['preview']['images'][0]['source']
-        currentAR = imageData['width']/imageData['height']
-        currentMP = imageData['width']*imageData['height']
-        aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
-        if aspectRatioDiff>self.ARmargin:
-            self.log.error(f'RedditImageSource: {self.getName()} incompatible aspect ratio AR={currentAR} {permalink}')
-            return None
-        if currentMP<self.minMP:
-            self.log.error(f'RedditImageSource: {self.getName()} small image {currentMP}MP {permalink}')
-            return None
-        
+                
         response = requests.get(postData['url'])
         _,fileExtension = os.path.splitext(postData['url'])
         outFile = self.tempDir +'/downloaded'+ fileExtension
