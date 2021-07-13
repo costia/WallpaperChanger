@@ -47,12 +47,7 @@ class ChangeWallpaperThread(threading.Thread):
         self.interruptWaitEvent.set()
         self.join()
     
-    def _getImage(self):
-        if not self.imageSources or len(self.imageSources)==0:
-            self.log.error('changeWallpaper: no image sources found')
-            self.notifyGUI({'status':f'No image sources found'})
-            return None
-        
+    def _getImage(self):        
         retDict = None
         retries = 0
 
@@ -61,17 +56,27 @@ class ChangeWallpaperThread(threading.Thread):
         self.failedSourceID = None
 
         while (not retDict) and (retries<=self.failRetries) and (not self.stopEvent.is_set()):
+            # safer for multithreading
+            # GUI/main thread can replace self.imageSources at any time
+            imageSources = self.imageSources
+            if not imageSources or len(imageSources)==0:
+                self.log.error('changeWallpaper: no image sources found')
+                self.notifyGUI({'status':f'No image sources found'})
+                return None
 
+            # not None = failed in previous iteration
             if selectedSourceID:
                 self.failedSourceID = selectedSourceID
+
+            # retry queued from previous _getImage call
             if retrysourceID:
-                selectedSourceID = retrysourceID % len(self.imageSources)
-                selectedSource = self.imageSources[selectedSourceID]
+                selectedSourceID = retrysourceID % len(imageSources)
+                selectedSource = imageSources[selectedSourceID]
                 self.log.info(f'changeWallpaper: retrying previously failed {selectedSource.getTypeName()}:{selectedSource.getName()}')
                 retrysourceID = None
             else:  
-                selectedSourceID = random.randint(0,len(self.imageSources)-1)
-                selectedSource = self.imageSources[selectedSourceID]
+                selectedSourceID = random.randint(0,len(imageSources)-1)
+                selectedSource = imageSources[selectedSourceID]
                 self.log.info(f'changeWallpaper: selected random source {selectedSource.getTypeName()}:{selectedSource.getName()}')
             
             try:
@@ -163,7 +168,7 @@ class ChangeWallpaperThread(threading.Thread):
     def run(self):
         while (self.imageSources is None) and (not self.stopEvent.is_set()):
                 self.log.info('ChangeWallpaperThread: waiting for sources to populate')
-                self.stopEvent.wait(0.05)
+                self.stopEvent.wait(0.01)
         while not self.stopEvent.is_set():
             self._changeWallpaper()
             self.minutesPassed=0
