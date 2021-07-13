@@ -27,10 +27,13 @@ class ChangeWallpaperThread(threading.Thread):
         screenHeight = GetSystemMetrics(1)
         self.requiredAR = screenWitdh/screenHeight
 
+        self.failedSourceID = None
+
     def notifyChangeThread(self,argsDict):
         if 'stop' in argsDict and argsDict['stop']:
             self._stopChangeThread()
         if 'setSources' in argsDict:
+            self.failedSourceID = None
             self.imageSources = argsDict['setSources']
         if 'setRefreshTimeout' in argsDict:
             self.changePeriod = argsDict['setRefreshTimeout']
@@ -52,8 +55,22 @@ class ChangeWallpaperThread(threading.Thread):
         
         retDict = None
         retries = 0
+
+        selectedSourceID = None
+        retrysourceID = self.failedSourceID
+        self.failedSourceID = None
+
         while (not retDict) and (retries<=self.failRetries) and (not self.stopEvent.is_set()):
-            selectedSource = self.imageSources[random.randint(0,len(self.imageSources)-1)]
+
+            if selectedSourceID:
+                self.failedSourceID = selectedSourceID
+            if retrysourceID:
+                selectedSourceID = retrysourceID % len(self.imageSources)
+                retrysourceID = None
+            else:  
+                selectedSourceID = random.randint(0,len(self.imageSources)-1)
+            selectedSource = self.imageSources[selectedSourceID]
+
             self.log.info(f'changeWallpaper: selected source {selectedSource.getName()}')
             try:
                 retDict = selectedSource.getImage()
@@ -77,18 +94,18 @@ class ChangeWallpaperThread(threading.Thread):
                 aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
                 if aspectRatioDiff>self.aspectRatioMargin:
                     self.notifyGUI({'status':f'Bad aspect ratio {currentAR} {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                    self.log.error(f'changeWallpaper: {selectedSource.getName()} incompatible aspect ratio AR={currentAR} {metaName}')
+                    self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()}incompatible aspect ratio AR={currentAR} {metaName}')
                     retDict = None
                     continue
 
                 if imWidth<self.minResolution[0] or imHeight<self.minResolution[1]:
                     self.notifyGUI({'status':f'Small image - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                    self.log.error(f'changeWallpaper: {selectedSource.getName()} small image {imWidth}x{imHeight} {metaName}')
+                    self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} small image {imWidth}x{imHeight} {metaName}')
                     retDict = None
                     continue
             except:
                 self.notifyGUI({'status':f'failed to open image {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                self.log.error(f'changeWallpaper: {selectedSource.getName()} failed to open image {image}')
+                self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} failed to open image {image}')
                 retDict = None
                 continue
 
