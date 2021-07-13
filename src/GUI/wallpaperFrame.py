@@ -231,6 +231,8 @@ class WallpaperFrame(wx.Frame):
         if selectedItem<0:
             selectedItem=1
             currentSelection = self.timeSelections[selectedItem]['value']
+            # call after will delay execution untill main's ctor is done
+            # otherwise change wallpaper instance doesnt exist yet
             wx.CallAfter(self.wxApp.notifyMain,{'setRefreshTimeout':currentSelection})
             self.wallpaperRefreshTimeout = currentSelection
 
@@ -248,6 +250,8 @@ class WallpaperFrame(wx.Frame):
         if selectedItem<0:
             selectedItem=0
             currentSelection = self.minResolutionsSelections[selectedItem]['value']
+            # call after will delay execution untill main's ctor is done
+            # otherwise change wallpaper instance doesnt exist yet
             wx.CallAfter(self.wxApp.notifyMain,{'setMinResolution':currentSelection})
             self.wallpaperMinResolution = currentSelection
 
