@@ -16,3 +16,4 @@ aspectRatioMargin: 0.3
 minResolution:
 - 1280
 - 720
+duplicateTimeout: 30

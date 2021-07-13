@@ -15,6 +15,7 @@ class ChangeWallpaperThread(threading.Thread):
         self.changePeriod = config['changePeriod']
         self.minResolution = config['minResolution']
         self.aspectRatioMargin = config['aspectRatioMargin']
+        self.duplicateTimeout = config['duplicateTimeout']
         self.notifyGUI = notifyGUI
         self.imageSources = None
         self.stopEvent = threading.Event()
@@ -91,7 +92,7 @@ class ChangeWallpaperThread(threading.Thread):
                 retDict = None
                 continue
 
-            dup = self.db.checkDuplicate(retDict['image'])
+            dup = self.db.checkDuplicate(retDict['image'],self.duplicateTimeout)
             if dup:
                 self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
                 self.log.info(f'changeWallpaper: duplicate detected {metaName}, {dup}')

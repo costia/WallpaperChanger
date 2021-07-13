@@ -52,9 +52,9 @@ class WallpaperDatabase:
         return names, sources
 
 
-    def checkDuplicate(self,image):
+    def checkDuplicate(self,image,timeout):
         ret = None
-        time = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+        time = datetime.datetime.utcnow() - datetime.timedelta(days=timeout)
         time = time.timestamp()
         imageSize = os.path.getsize(image)
         
