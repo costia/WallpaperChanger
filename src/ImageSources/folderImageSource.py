@@ -1,12 +1,16 @@
 import os
 import logging
 import random
+import shutil
+
+from resources import Resources
 
 class FolderImageSource:
     def __init__(self,argsDict):
         self.path = argsDict['config']
         self.log = logging.getLogger('WallpaperChanger')
         self.imageTypes = ['.jpeg','.jpg','.png','.tiff','.tif','.gif']
+        self.tempDir = Resources['TEMP_DIR']
 
     def getName(self):
         return self.path
@@ -33,8 +37,13 @@ class FolderImageSource:
             return None
         
         self.log.info(f'FolderImageSource: selected file is {selectedFile}')
+        
+        _,fileExtension = os.path.splitext(selectedFile)
+        outFile = self.tempDir +'/downloaded'+ fileExtension
+        shutil.copyfile(selectedFile,outFile)
+
         retData = {
-            'image':selectedFile,
+            'image':outFile,
             'metaName':os.path.basename(selectedFile),
             'imageSource':selectedFile
         }

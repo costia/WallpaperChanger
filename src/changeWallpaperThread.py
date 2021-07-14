@@ -3,9 +3,11 @@ from win32api import GetSystemMetrics
 import random
 import logging
 from PIL import Image
+import os
 
 from osChangeWallpaper import setWallpaper
 from database import WallpaperDatabase
+from resources import Resources
 
 class ChangeWallpaperThread(threading.Thread):
     def __init__(self,config,notifyGUI):
@@ -22,6 +24,7 @@ class ChangeWallpaperThread(threading.Thread):
         self.interruptWaitEvent = threading.Event()
         self.db = WallpaperDatabase()
         self.log = logging.getLogger('WallpaperChanger')
+        self.tempDir = os.path.abspath(Resources['TEMP_DIR'])
 
         screenWitdh = GetSystemMetrics(0)
         screenHeight = GetSystemMetrics(1)
@@ -161,6 +164,10 @@ class ChangeWallpaperThread(threading.Thread):
             }
             self.db.addEntry(dbEntry)
             self.notifyGUI({'updateHistory':True})
+            image = os.path.abspath(image)
+            assert(image.startswith(self.tempDir))
+            if image.startswith(self.tempDir):
+                os.remove(image)
         
         self.notifyGUI({'blockWallpaperChange':False})
             
