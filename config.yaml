@@ -11,6 +11,8 @@ sources:
   config: earthview
 - type: unsplash
   config: unsplash
+- type: flickr
+  config: flickr
 changePeriod: 10
 failRetries: 10
 failWait: 1
