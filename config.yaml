@@ -9,6 +9,8 @@ sources:
   config: wallpaper
 - type: earthview
   config: earthview
+- type: unsplash
+  config: unsplash
 changePeriod: 10
 failRetries: 10
 failWait: 1

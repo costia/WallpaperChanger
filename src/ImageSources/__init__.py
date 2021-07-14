@@ -51,8 +51,10 @@ def registerAllTypes():
     from ImageSources.folderImageSource import FolderImageSource
     from ImageSources.imgurImageSource import ImgurImageSource
     from ImageSources.earthviewImageSource import EarthviewImageSource
+    from ImageSources.unsplashImageSource import UnsplashImageSource
 
     registerSourceType(RedditImageSource.getTypeName(),RedditImageSource)
     registerSourceType(FolderImageSource.getTypeName(),FolderImageSource) 
     registerSourceType(ImgurImageSource.getTypeName(),ImgurImageSource)
     registerSourceType(EarthviewImageSource.getTypeName(),EarthviewImageSource)
+    registerSourceType(UnsplashImageSource.getTypeName(),UnsplashImageSource)
