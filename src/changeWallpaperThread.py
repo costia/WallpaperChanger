@@ -178,10 +178,10 @@ class ChangeWallpaperThread(threading.Thread):
                 self.stopEvent.wait(0.01)
         while not self.stopEvent.is_set():
             self._changeWallpaper()
-            self.minutesPassed=0
-            while self.minutesPassed<self.changePeriod  and not self.interruptWaitEvent.is_set():
-                self.interruptWaitEvent.wait(60)
-                self.minutesPassed +=1
-                # self.notifyGUI({'status':f'Time since last refresh: {self.minutesPassed} minutes'})
+            self.secondsPassed=0
+            while self.secondsPassed<(self.changePeriod*60)  and not self.interruptWaitEvent.is_set():
+                self.interruptWaitEvent.wait(1.0)
+                self.secondsPassed +=1
+                self.notifyGUI({'percentTimer':(self.changePeriod*60-self.secondsPassed)/(self.changePeriod*60)})
                 assert(self.changePeriod >=1)
             self.interruptWaitEvent.clear()

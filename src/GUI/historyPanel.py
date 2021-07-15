@@ -25,8 +25,6 @@ class HistoryPanel(wx.Panel):
         createMenuItem(self.popupmenuHistory, 'Copy selection source',  self._onCopySource)
         self.historListbox.Bind(wx.EVT_CONTEXT_MENU, self._onShowHistoryPopup)
 
-        self.Show(False)
-
     def _updateHistoryList(self):
         names,links = self.db.getLatest(self.historyLength)
         self.historySources = links
