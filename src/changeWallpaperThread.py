@@ -105,7 +105,7 @@ class ChangeWallpaperThread(threading.Thread):
                 aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
                 if aspectRatioDiff>self.aspectRatioMargin:
                     self.notifyGUI({'status':f'Bad aspect ratio {currentAR} {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                    self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()}incompatible aspect ratio AR={currentAR} {metaName}')
+                    self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} incompatible aspect ratio AR={currentAR} {metaName}')
                     retDict = None
                     continue
 
