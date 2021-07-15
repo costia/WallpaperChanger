@@ -28,6 +28,9 @@ class MainApp:
 
         with open(Resources['CONFIG_YAML'],'rt') as f:
             self.config = yaml.load(f,Loader=yaml.SafeLoader)
+        
+        if 'silent' in self.config and self.config['silent']:
+            fileHandler.setLevel(logging.WARNING)
 
         configPath=Resources['CONFIG_YAML']
         shutil.copyfile(configPath,configPath+'.bak')

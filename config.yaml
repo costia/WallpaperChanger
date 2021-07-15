@@ -21,3 +21,4 @@ minResolution:
 - 1280
 - 720
 duplicateTimeout: 30
+silent: 1
