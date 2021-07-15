@@ -21,7 +21,7 @@ class WallpaperFrame(wx.Frame):
         self.log = logging.getLogger('WallpaperChanger')
         
 
-        self.selectTimerPanelBtn = wx.Button(self,-1,'Main',pos=(0,0),size=(self.windowWidth/3+5,30))
+        self.selectTimerPanelBtn = wx.Button(self,-1,'Timer',pos=(0,0),size=(self.windowWidth/3+5,30))
         self.selectHistoryPanelBtn = wx.Button(self,-1,'History',pos=(self.windowWidth/3+5,0),size=(self.windowWidth/3,30))
         self.selectMainPanelBtn = wx.Button(self,-1,'Settings',pos=(self.windowWidth*2/3+5,0),size=(self.windowWidth/3+5,30))
         
