@@ -1,12 +1,7 @@
 import wx
-import wx.adv
 import logging
-import copy
 
-from resources import Resources
-from GUI.common import createMenuItem
 from ImageSources import getSourceTypes
-from database import WallpaperDatabase
 
 
 class MainPanel(wx.Panel):
