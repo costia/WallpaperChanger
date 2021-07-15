@@ -42,7 +42,10 @@ class TimerPanel(wx.Panel):
         
         path = gc.CreatePath()
         dark = 0.6
-        gc.SetBrush(wx.Brush(wx.Colour(240,240,240)))
+        if self.drawPercent:
+            gc.SetBrush(wx.Brush(wx.Colour(240,240,240)))
+        else:
+            gc.SetBrush(wx.Brush(wx.Colour(200,200,200)))
         path = gc.CreatePath()
         path.MoveToPoint(center)
         path.AddCircle(center[0],center[1],radius)
