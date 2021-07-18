@@ -10,8 +10,13 @@ from wx.core import INT64_MAX
 from resources import Resources
 
 def removeTemp(tempName):
-    time.sleep(2)
-    os.remove(tempName)
+    log = logging.getLogger('WallpaperChanger')
+    try:
+        time.sleep(2)
+        os.remove(tempName)
+    except:
+        log.error(f'setWallpaper: Failed deleting temp file {tempName}')
+
 
 def setWallpaper(path):
     log = logging.getLogger('WallpaperChanger')

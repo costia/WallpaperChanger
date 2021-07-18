@@ -116,7 +116,6 @@ class RedditImageSource:
         else:
             if not self.pseudoRandomCache:
                 assert(self.pseudoRandomCacheThread)
-                self.pseudoRandomCacheThread.join(0)
                 if not self.pseudoRandomCacheThread.is_alive():
                     self.pseudoRandomCacheThread = RedditPseudoRandomCacheThread(self)
                     self.pseudoRandomCacheThread.start()
@@ -124,7 +123,6 @@ class RedditImageSource:
                 return None
             else:
                 if self.pseudoRandomCacheThread:
-                    self.pseudoRandomCacheThread.join(0)
                     if not self.pseudoRandomCacheThread.is_alive():
                         self.pseudoRandomCacheThread = None
 

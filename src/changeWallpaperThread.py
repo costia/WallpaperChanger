@@ -164,10 +164,13 @@ class ChangeWallpaperThread(threading.Thread):
             }
             self.db.addEntry(dbEntry)
             self.notifyGUI({'updateHistory':True})
-            image = os.path.abspath(image)
-            assert(image.startswith(self.tempDir))
-            if image.startswith(self.tempDir):
-                os.remove(image)
+            try:
+                image = os.path.abspath(image)
+                assert(image.startswith(self.tempDir))
+                if image.startswith(self.tempDir):
+                    os.remove(image)
+            except:
+                self.log.error(f'ChangeWallpaperThread: Failed deleting temp file {image}')
         
         self.notifyGUI({'blockWallpaperChange':False})
             
