@@ -79,4 +79,8 @@ class TimerPanel(wx.Panel):
         if 'blockWallpaperChange' in argsDict:
             self.percent = 1.0
             self.drawPercent = not argsDict['blockWallpaperChange']
+            if argsDict['blockWallpaperChange']:
+                self.changeNowButton.Disable()
+            else:
+                self.changeNowButton.Enable()
             self.Refresh(eraseBackground=False)
