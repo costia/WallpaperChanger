@@ -101,6 +101,7 @@ class ChangeWallpaperThread(threading.Thread):
                 im = Image.open(image)
                 imWidth = im.size[0]
                 imHeight = im.size[1]
+                im.close()
                 currentAR = imWidth/imHeight
                 aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
                 if aspectRatioDiff>self.aspectRatioMargin:
