@@ -148,6 +148,8 @@ class ChangeWallpaperThread(threading.Thread):
             image = imageDict['image']
             imageSource = imageDict['imageSource']
 
+            self.log.info(f'ChangeWallpaperThread: applying {selectedSourceType}:{selectedSourceName}: {image}')
+
             ret = setWallpaper(image)
             if ret:
                 self.notifyGUI({'status':f'{selectedSourceType}:{selectedSourceName}: {metaName}'})
