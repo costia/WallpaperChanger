@@ -4,6 +4,7 @@ import random
 import logging
 from PIL import Image
 import os
+import traceback
 
 from osChangeWallpaper import setWallpaper
 from database import WallpaperDatabase
@@ -154,6 +155,7 @@ class ChangeWallpaperThread(threading.Thread):
             ret = setWallpaper(image)
             if ret:
                 self.notifyGUI({'status':f'{selectedSourceType}:{selectedSourceName}: {metaName}'})
+                self.log.info(f'ChangeWallpaperThread: applied {selectedSourceType}:{selectedSourceName}: {image}')
             else:
                 self.notifyGUI({'status':f'Failed applying {selectedSourceType}:{selectedSourceName}: {metaName}'})
                 self.log.error(f'ChangeWallpaperThread: Failed applying {selectedSourceType}:{selectedSourceName}: {image}')
@@ -179,15 +181,20 @@ class ChangeWallpaperThread(threading.Thread):
             
 
     def run(self):
-        while (self.imageSources is None) and (not self.stopEvent.is_set()):
-                self.log.info('ChangeWallpaperThread: waiting for sources to populate')
-                self.stopEvent.wait(0.01)
-        while not self.stopEvent.is_set():
-            self._changeWallpaper()
-            self.secondsPassed=0
-            while self.secondsPassed<(self.changePeriod*60)  and not self.interruptWaitEvent.is_set():
-                self.interruptWaitEvent.wait(1.0)
-                self.secondsPassed +=1
-                self.notifyGUI({'percentTimer':(self.changePeriod*60-self.secondsPassed)/(self.changePeriod*60)})
-                assert(self.changePeriod >=1)
-            self.interruptWaitEvent.clear()
+        try:
+            while (self.imageSources is None) and (not self.stopEvent.is_set()):
+                    self.log.info('ChangeWallpaperThread: waiting for sources to populate')
+                    self.stopEvent.wait(0.01)
+            while not self.stopEvent.is_set():
+                self._changeWallpaper()
+                self.secondsPassed=0
+                while self.secondsPassed<(self.changePeriod*60)  and not self.interruptWaitEvent.is_set():
+                    self.interruptWaitEvent.wait(1.0)
+                    self.secondsPassed +=1
+                    self.notifyGUI({'percentTimer':(self.changePeriod*60-self.secondsPassed)/(self.changePeriod*60)})
+                    assert(self.changePeriod >=1)
+                self.interruptWaitEvent.clear()
+        except Exception: 
+            log = logging.getLogger('WallpaperChanger')
+            ex = traceback.format_exc()
+            log.error(ex)

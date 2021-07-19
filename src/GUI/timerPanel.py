@@ -23,7 +23,7 @@ class TimerPanel(wx.Panel):
 
     def OnSize(self,event):
         Size  = self.ClientSize
-        self._Buffer = wx.EmptyBitmap(*Size)
+        self._Buffer = wx.Bitmap(*Size)
         self.UpdateDrawing()
 
     def OnPaint(self, event):
