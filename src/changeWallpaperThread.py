@@ -104,23 +104,28 @@ class ChangeWallpaperThread(threading.Thread):
                 imHeight = im.size[1]
                 im.close()
                 currentAR = imWidth/imHeight
-                aspectRatioDiff =abs(currentAR-self.requiredAR)/self.requiredAR
-                if aspectRatioDiff>self.aspectRatioMargin:
-                    self.notifyGUI({'status':f'Bad aspect ratio {currentAR} {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                    self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} incompatible aspect ratio AR={currentAR} {metaName}')
-                    retDict = None
-                    continue
-
-                if imWidth<self.minResolution[0] or imHeight<self.minResolution[1]:
-                    self.notifyGUI({'status':f'Small image - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
-                    self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} small image {imWidth}x{imHeight} {metaName}')
-                    retDict = None
-                    continue
             except:
                 self.notifyGUI({'status':f'failed to open image {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
                 self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} failed to open image {image}')
                 retDict = None
+                self._deleteTemp(image)
                 continue
+
+            aspectRatioDiff = abs(currentAR-self.requiredAR)/self.requiredAR
+            if aspectRatioDiff>self.aspectRatioMargin:
+                self.notifyGUI({'status':f'Bad aspect ratio {currentAR} {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} incompatible aspect ratio AR={currentAR} {metaName}')
+                retDict = None
+                self._deleteTemp(image)
+                continue
+
+            if imWidth<self.minResolution[0] or imHeight<self.minResolution[1]:
+                self.notifyGUI({'status':f'Small image - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
+                self.log.error(f'changeWallpaper: {selectedSource.getTypeName()}:{selectedSource.getName()} small image {imWidth}x{imHeight} {metaName}')
+                retDict = None
+                self._deleteTemp(image)
+                continue
+
 
             dup = self.db.checkDuplicate(retDict['image'],self.duplicateTimeout)
             if dup:
@@ -128,6 +133,7 @@ class ChangeWallpaperThread(threading.Thread):
                 self.notifyGUI({'status':f'Duplicate - {selectedSource.getTypeName()}:{selectedSource.getName()}:{metaName}'})
                 self.log.info(f'changeWallpaper: duplicate detected {imageSource}, {dup}')
                 retDict = None
+                self._deleteTemp(image)
                 continue
 
             retDict['selectedSourceType'] = selectedSource.getTypeName()
@@ -137,6 +143,16 @@ class ChangeWallpaperThread(threading.Thread):
             self.notifyGUI({'status':f'{selectedSource.getTypeName()}:{selectedSource.getName()}: FAILED'})
 
         return retDict
+    
+    def _deleteTemp(self,tempName):
+        try:
+            image = os.path.abspath(tempName)
+            assert(image.startswith(self.tempDir))
+            if image.startswith(self.tempDir):
+                os.remove(image)
+                self.log.info(f'ChangeWallpaperThread: deleted temp file {image}')
+        except:
+            self.log.error(f'ChangeWallpaperThread: Failed deleting temp file {image}')
 
     def _changeWallpaper(self):
         self.notifyGUI({'status':'Changing wallpaper','blockWallpaperChange':True})
@@ -169,13 +185,8 @@ class ChangeWallpaperThread(threading.Thread):
             }
             self.db.addEntry(dbEntry)
             self.notifyGUI({'updateHistory':True})
-            try:
-                image = os.path.abspath(image)
-                assert(image.startswith(self.tempDir))
-                if image.startswith(self.tempDir):
-                    os.remove(image)
-            except:
-                self.log.error(f'ChangeWallpaperThread: Failed deleting temp file {image}')
+            self._deleteTemp(image)
+
         
         self.notifyGUI({'blockWallpaperChange':False})
             

@@ -15,7 +15,8 @@ class MainPanel(wx.Panel):
         self.log = logging.getLogger('WallpaperChanger')
         self.parentFrame = frame
 
-        self.timeSelections = [{'name':'5min','value':5},
+        self.timeSelections = [{'name':'1min','value':1},
+                        {'name':'5min','value':5},
                         {'name':'10min','value':10},
                         {'name':'1h','value':60},
                         {'name':'4h','value':60*4},

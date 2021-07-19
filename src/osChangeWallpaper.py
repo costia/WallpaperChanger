@@ -14,6 +14,7 @@ def removeTemp(tempName):
     try:
         time.sleep(2)
         os.remove(tempName)
+        log.info(f'setWallpaper: deleted temp file {tempName}')
     except:
         log.error(f'setWallpaper: Failed deleting temp file {tempName}')
 
