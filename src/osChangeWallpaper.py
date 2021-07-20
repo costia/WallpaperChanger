@@ -30,11 +30,12 @@ def setWallpaper(path):
 
     try:
         im = Image.open(path)
+        im.save(tempBmp)
+        im.close()
     except:
-        log.error(f'setWallpaper: file not an image {path}')
+        log.error(f'setWallpaper: failed to convert to bmp {path}')
         return False
-    im.save(tempBmp)
-    im.close()
+
 
     ret = ctypes.windll.user32.SystemParametersInfoW(20, 0, tempBmp , 0)
     if not ret:
